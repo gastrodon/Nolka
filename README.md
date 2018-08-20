@@ -1,3 +1,8 @@
 # Nolka
 
-Discord bot named Nolka, TODO coming soon
+## TODO
+- Welcome and goodbye messages
+- User badges
+- Give roles
+- Command to show vegetable recipes
+- Music bot
