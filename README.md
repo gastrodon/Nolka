@@ -9,4 +9,9 @@
 - Music bot
 
 ## TODO
-- Save and load channel and server preferences saved with -set and -init using json
+- Welcome and goodbye messages
+
+## DONE
+- Saving and loading environment
+- Initialize bot
+- Set channels for the bot to do things in

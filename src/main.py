@@ -12,30 +12,51 @@ Nolka = commands.Bot(command_prefix="-")
 
 # Globals
 token = json.load(open("token.json", "r"))["token"]
-env = json.load(open("env.json", "r"))
+env = {}
 
+# get type of discord object
+# dType(id) returns string
+def dType(id):
+    if Nolka.get_server(id) is not None:
+        return "server"
+    if Nolka.get_channel(id) is not None:
+        return "channel"
+    return "unknown"
 
-try:
-    server = env["server"]
-except KeyError:
-    server = None
-
-# TODO json can't save objects, find a different way to save and load channel and server info
-def updateEnv():
+# TODO Looks like save works, build loading part
+def updateEnv(type):
     global env
-    try:
+    if type is "load":
+        try:
+            source = json.load(open("env.json"))
+        except:
+            raise Exception("didn't open file")
+        for obj in source:
+            if source[obj]["type"] == "server":
+                env["server"] = Nolka.get_server(source[obj]["id"])
+            if source[obj]["type"] == "channel":
+                env[obj] = Nolka.get_channel(source[obj]["id"])
+        return
+    if type is "save":
+        formatted = {}
+        for obj in env:
+            try:
+                formatted[obj] = {}
+                formatted[obj]["id"] = env[obj].id
+                formatted[obj]["type"] = dType(formatted[obj]["id"])
+            except:
+                raise Exception("can't create formatted json with object {} called {}".format(obj.id, obj.name))
         with open("env.json", "w") as out:
-            json.dump(env, out)
+            json.dump(formatted, out)
             out.close()
-        env = json.load(open("env.json", "r"))
-    except:
-        raise Exception("Problem saving env to json")
-    return
+        updateEnv("load")
+        return
 
+# TODO load env.json when bot connects
 @Nolka.event
 async def on_ready():
-    await Nolka.change_presence(game=discord.Game(name="under construction"))
-    return
+    updateEnv("load")
+    Nolka.change_presence(game=discord.Game(name="Working", url=""))
 
 @Nolka.event
 async def on_message(message):
@@ -44,38 +65,36 @@ async def on_message(message):
 @Nolka.event
 async def on_member_join(member):
     global env
-    await Nolka.send_message(env[member.server.id]["intro"])
+    Nolka.send_message(env["intro"], "Welcome, {}".format(member.nick))
 
 # this is for testing to see what things do
 @Nolka.command(pass_context=True)
 async def test(ctx, *args):
-    await Nolka.say(ctx.message.content)
+    return
 
 # set bot server and default channel
 #-init location
 @Nolka.command(pass_context=True)
 async def init(ctx, *args):
-    print("init start")
-    global server
     global env
     env["server"] = ctx.message.server
     channels = [_ for _ in env["server"].channels]
     if len(args) is 0:
         await Nolka.say("Failed to initialize, no channel given")
+        updateEnv("save")
         return
     if args[0] == "here":
         env["bot"] = ctx.message.channel
-        updateEnv()
-        await Nolka.send_message(Nolka.get_channel(env["bot"]), "Initialized")
-        print("init done")
+        await Nolka.send_message(env["bot"], "Initialized")
+        updateEnv("save")
         return
     elif args[0] not in [_.name for _ in channels]:
         await Nolka.say("Failed to initialize, cannot find channel".format(args[0]))
+        updateEnv("save")
         return
     env["bot"] = list(filter(lambda _ : _.name == args[0], channels))[0]
-    updateEnv()
-    await Nolka.send_message(Nolka.get_channel(env["bot"]), "Initialized")
-    print("init done")
+    await Nolka.send_message(env["bot"], "Initialized")
+    updateEnv("save")
 
 # set channel for bot activities
 #-set type channel
@@ -84,20 +103,20 @@ async def set(ctx, *args):
     type = args[0]
     location = args[1]
     global env
+    server = env["server"]
     if location is None:
-        await Nolka.send_message(Nolka.get_channel(env["bot"].id), "No argument passed")
+        await Nolka.send_message(env["bot"], "No argument passed")
         return
-    if location is "here":
+    if location == "here":
         env[type] = ctx.message.channel
-        await Nolka.send_message(Nolka.get_channel(env["bot"].id), "This is my home now")
-        updateEnv()
+        await Nolka.send_message(env["bot"], "This is my home now")
         return
-    channels = [_ for _ in server.channels]
-    if location not in channels:
-        await Nolka.send_message(get_channel(env["bot"].id), "Can't find channel {}".format(location))
+    channels = [_ for _ in env["server"].channels]
+    if location not in [_.name for _ in channels]:
+        await Nolka.send_message(env["bot"], "Can't find channel {}".format(location))
         return
     env[type] = list(filter(lambda _ : _.name == location, channels))[0]
-    Nolka.send_message(get_channel(env["bot"].id), "Set home channel to {}".format(env[type].name))
+    await Nolka.send_message(env["bot"], "Set {} channel to {}".format(type, env[type].name))
     return
 
 Nolka.run(token)
