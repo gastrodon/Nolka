@@ -1,17 +1,23 @@
 # Nolka
 
 
-## Features Goal
-- Welcome and goodbye messages
+## Todo
+- Add a command reference in README.md
 - User badges
-- Give roles
+- Save user birthday
 - Command to show vegetable recipes
 - Music bot
+- Make intro and outro messages dynamic
 
-## TODO
+## Current
+
+## Done
+- Make -role create be able to also assign roles
+- Delete roles
+- Don't add double roles
+- Make role manipulation work with multiple roles
+- Replace all instances of Nolka.say() into bot with say()
 - Welcome and goodbye messages
-
-## DONE
 - Saving and loading environment
 - Initialize bot
-- Set channels for the bot to do things in
+- Set channels for the bot to use
