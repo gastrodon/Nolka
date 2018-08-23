@@ -6,10 +6,10 @@
 - User badges
 - Save user birthday
 - Command to show vegetable recipes
-- Music bot
 - Make intro and outro messages dynamic
 
 ## Current
+- Music bot
 
 ## Done
 - Make -role create be able to also assign roles
