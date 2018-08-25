@@ -3,9 +3,10 @@
 import sys
 
 if (sys.version_info[0] is not 3 or sys.version_info[1] is not 6):
-    raise Exception("Must be python verion 3.6.x")
+    #raise Exception("Must be python verion 3.6.x")
+    pass
 
-import discord, asyncio, json
+import discord, asyncio, json, datetime
 import discord.ext.commands as commands
 
 Nolka = commands.Bot(command_prefix="-")
@@ -16,9 +17,9 @@ env = {}
 verbose = True
 
 # shorthand for Nolka.send_message() to bot channel
-async def say(message):
+async def log(message):
     global env
-    await Nolka.send_message(env["bot"], message)
+    await Nolka.send_message(env["log"], message)
     return
 
 # for verbose output
@@ -70,7 +71,7 @@ def updateEnv(type):
 @Nolka.event
 async def on_ready():
     updateEnv("load")
-    await Nolka.change_presence(game=discord.Game(name="Working"))
+    await Nolka.change_presence(game=discord.Game(name="Local Dev"))
 
 # message hook
 @Nolka.event
@@ -89,6 +90,8 @@ async def on_member_leave(member):
     global env
     Nolka.send_message(env["log"], "Goodbye, {}".format(member.nick))
 
+# Administrator
+
 @Nolka.command()
 async def verbose(*args):
     global verbose
@@ -103,16 +106,14 @@ async def verbose(*args):
         verbose = not Verbose
         return
     finally:
-        await say("Supply a boolan, or toggle")
+        await log("Supply a boolan, or toggle")
 
 # testing function
 # -test arguments (if any)
 @Nolka.command(pass_context=True)
 async def test(ctx, *args):
     global env
-    print(ctx.message.mentions)
-    for user in ctx.message.mentions:
-        print(user)
+    pass
 
 # set bot server and default channel
 #-init location
@@ -127,7 +128,7 @@ async def init(ctx, *args):
         return
     if args[0] == "here":
         env["bot"] = ctx.message.channel
-        await say("Initialized")
+        await log("Initialized")
         updateEnv("save")
         return
     elif args[0] not in [_.name for _ in channels]:
@@ -135,7 +136,7 @@ async def init(ctx, *args):
         updateEnv("save")
         return
     env["bot"] = [_ for _ in channels if _.name == args[0]][0]
-    await say("Initialized")
+    await log("Initialized")
     updateEnv("save")
 
 # set channel for bot activities
@@ -147,18 +148,18 @@ async def set(ctx, *args):
     global env
     server = env["server"]
     if location is None:
-        await say("No argument passed")
+        await log("No argument passed")
         return
     if location == "here":
         env[type] = ctx.message.channel
-        await say("This is my home now")
+        await log("This is my home now")
         return
     channels = [_ for _ in env["server"].channels]
     if location not in [_.name for _ in channels]:
-        await say("Can't find the channel {}".format(location))
+        await log("Can't find the channel {}".format(location))
         return
     env[type] = list(filter(lambda _ : _.name == location, channels))[0]
-    await say("Set channel {} to {}".format(type, env[type].name))
+    await log("Set channel {} to {}".format(type, env[type].name))
     return
 
 # role manipulaiton group
@@ -174,7 +175,7 @@ async def give(ctx, *args):
     global env
     roles = [_ for _ in env["server"].roles if _.name.lower() in [_.lower() for _ in args]]
     if len(roles) is 0:
-        await say("I need at least one role")
+        await log("I need at least one role")
         return
     for member in ctx.message.mentions:
         for role in roles:
@@ -183,28 +184,33 @@ async def give(ctx, *args):
     return
 
 # role take from user
-# -role take role user
+#-role take [roles] [users]
 @role.command(pass_context=True)
 async def take(ctx, *args):
     global env
     roles = [_ for _ in env["server"].roles if _.name.lower() in [_.lower() for _ in args]]
     if len(roles) is 0:
-        await say("I need at least one role")
+        await log("I need at least one role")
+        return
+    if len(ctx.message.mentions) is 0:
+        await log("I need at least one user")
         return
     for member in ctx.message.mentions:
-        for role in roles:
-            await Nolka.remove_roles(member, role)
-            await log("took role {} from user {}".format(role, member))
+        await Nolka.remove_roles(member, *roles)
+    await log("took roles")
     return
 
+# role create new role
+#-role create [roles] [users]
 @role.command(pass_context=True)
 async def create(ctx, *args):
     global env
     make = [_ for _ in args if "@" not in _]
     for role in make:
         if role.lower() in [_.name.lower() for _ in env["server"].roles]:
-            await say("There's already have a role called {} here".format(role))
+            await log("There's already have a role called {} here".format(role))
         else:
+            print(env["server"]); return
             await Nolka.create_role(env["server"], name = role)
             await log("created role {}".format(role))
     if len(ctx.message.mentions) is not 0:
@@ -224,10 +230,12 @@ async def delete(ctx, *args):
         return
     for role in kill:
         if role.name.lower() not in [_.name.lower() for _ in env["server"].roles]:
-            await say("There's no role called {}".format(role))
+            await log("There's no role called {}".format(role))
         else:
             await Nolka.delete_role(env["server"], role)
             await log("Deleted role {}".format(role))
     return
+
+# User
 
 Nolka.run(token)

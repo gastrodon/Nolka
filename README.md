@@ -4,12 +4,13 @@
 ## Todo
 - Add a command reference in README.md
 - User badges
-- Save user birthday
-- Command to show vegetable recipes
 - Make intro and outro messages dynamic
+- Music bot
+- Add admin check
 
 ## Current
-- Music bot
+- Save user birthday
+- Command to show vegetable recipes
 
 ## Done
 - Make -role create be able to also assign roles
