@@ -6,7 +6,7 @@ if (sys.version_info[0] is not 3 or sys.version_info[1] is not 6):
     #raise Exception("Must be python verion 3.6.x")
     pass
 
-import discord, asyncio, json, datetime
+import discord, asyncio, json, datetime, objects
 import discord.ext.commands as commands
 
 Nolka = commands.Bot(command_prefix="-")
@@ -14,20 +14,8 @@ Nolka = commands.Bot(command_prefix="-")
 # Globals
 token = json.load(open("token.json", "r"))["token"]
 env = {}
+users = {}
 verbose = True
-
-# shorthand for Nolka.send_message() to bot channel
-async def log(message):
-    global env
-    await Nolka.send_message(env["log"], message)
-    return
-
-# for verbose output
-async def log(message):
-    global env
-    if verbose:
-        await Nolka.send_message(env["bot"], message)
-    return
 
 # get type of discord object
 # dType(id) returns string
@@ -38,39 +26,18 @@ def dType(id):
         return "channel"
     return "unknown"
 
-# TODO Looks like save works, build loading part
-def updateEnv(type):
+def update():
     global env
-    if type is "load":
-        try:
-            source = json.load(open("env.json"))
-        except:
-            raise Exception("didn't open file")
-        for obj in source:
-            if source[obj]["type"] == "server":
-                env["server"] = Nolka.get_server(source[obj]["id"])
-            if source[obj]["type"] == "channel":
-                env[obj] = Nolka.get_channel(source[obj]["id"])
-        return
-    if type is "save":
-        formatted = {}
-        for obj in env:
-            try:
-                formatted[obj] = {}
-                formatted[obj]["id"] = env[obj].id
-                formatted[obj]["type"] = dType(formatted[obj]["id"])
-            except:
-                raise Exception("can't create formatted json with object {} called {}".format(obj.id, obj.name))
-        with open("env.json", "w") as out:
-            json.dump(formatted, out)
-            out.close()
-        updateEnv("load")
-        return
+    with open("env.json", "w") as envJSON:
+        json.dump(env, envJSON)
+    with open("env.json", "r") as envJSON:
+        env = json.load(envJSON)
 
-# TODO load env.json when bot connects
 @Nolka.event
 async def on_ready():
-    updateEnv("load")
+    global env
+    with open("env.json", "r") as envJSON:
+        env = json.load(envJSON)
     await Nolka.change_presence(game=discord.Game(name="Local Dev"))
 
 # message hook
@@ -78,88 +45,93 @@ async def on_ready():
 async def on_message(message):
     await Nolka.process_commands(message)
 
-# member join message
+# member join
 @Nolka.event
 async def on_member_join(member):
     global env
-    Nolka.send_message(env["log"], "Welcome, {}".format(member.nick))
+    Nolka.send_message(env["intro"], "Welcome, {}".format(member.nick))
 
-# member exit message
+# member exit
 @Nolka.event
 async def on_member_leave(member):
     global env
-    Nolka.send_message(env["log"], "Goodbye, {}".format(member.nick))
+    Nolka.send_message(env["intro"], "Goodbye, {}".format(member.nick))
 
 # Administrator
 
-@Nolka.command()
-async def verbose(*args):
-    global verbose
-    try:
-        if args[0] is "1" or args[0] is "True":
-            verbose = True
-            return
-        if args[0] is "0" or args[0] is "False":
-            verbose = False
-            return
-    except:
-        verbose = not Verbose
-        return
-    finally:
-        await log("Supply a boolan, or toggle")
-
 # testing function
-# -test arguments (if any)
+# -test *[arguments]
 @Nolka.command(pass_context=True)
 async def test(ctx, *args):
     global env
+    print(ctx.message.channel.id)
     pass
 
 # set bot server and default channel
 #-init location
-@Nolka.command(pass_context=True)
+@Nolka.command(pass_context = True)
 async def init(ctx, *args):
+    """
+    {servers -> id:
+        {users -> id:
+            {
+                tag ->      string,
+                birthday -> UNIX timestamp,
+            }
+        }
+    }
+    """
     global env
-    env["server"] = ctx.message.server
-    channels = [_ for _ in env["server"].channels]
+    dict = {}
+    dict["users"] = {}
+    dict["channels"] = {}
     if len(args) is 0:
-        await Nolka.say("Failed to initialize, no channel given")
-        updateEnv("save")
+        Nolka.say("I need a channel")
         return
-    if args[0] == "here":
-        env["bot"] = ctx.message.channel
-        await log("Initialized")
-        updateEnv("save")
+    elif args[0] == "here":
+        dict["channels"]["bot"] = ctx.message.channel.id
+        await Nolka.say("init to here")
+    elif args[0] in [_.name for _ in ctx.message.server.channels]:
+        dict["channels"]["bot"] = [_ for _ in ctx.message.server.channels if _.name == args[0]][0].id
+        await Nolka.say("init to another channel")
+    else:
+        await Nolka.say("Can't find the server{}".format(args[0]))
         return
-    elif args[0] not in [_.name for _ in channels]:
-        await Nolka.say("Failed to initialize, cannot find channel".format(args[0]))
-        updateEnv("save")
-        return
-    env["bot"] = [_ for _ in channels if _.name == args[0]][0]
-    await log("Initialized")
-    updateEnv("save")
+    server = ctx.message.server
+    for user in server.members:
+        dict["users"][user.id] = {}
+        dict["users"][user.id]["tag"] = "{}#{}".format(user.name, user.discriminator)
+        dict["users"][user.id]["birthday"] = None
+    with open("env.json", "w") as envJSON:
+        env[server.id] = dict
+        json.dump(env, envJSON)
+    with open("env.json", "r") as e:
+        env = json.load(e)
+    await Nolka.send_message(ctx.message.channel, "Init on server {}".format(server))
 
 # set channel for bot activities
-#-set type channel
+#-set [type] [channel]
+# TODO update fast
 @Nolka.command(pass_context=True)
 async def set(ctx, *args):
-    type = args[0]
-    location = args[1]
     global env
-    server = env["server"]
-    if location is None:
-        await log("No argument passed")
+    server = str(ctx.message.server.id)
+    bot = Nolka.get_channel(env[server]["channels"]["bot"])
+    print(bot.name)
+    if len(args)<2:
+        await Nolka.send_message(bot, "You're missing some arguments")
         return
-    if location == "here":
-        env[type] = ctx.message.channel
-        await log("This is my home now")
+    if args[1] == "here":
+        env[server]["channels"][args[0]] = ctx.message.channel.id
+        update()
+        await Nolka.send_message(bot, "Set {} channel here".format(args[0]))
         return
-    channels = [_ for _ in env["server"].channels]
-    if location not in [_.name for _ in channels]:
-        await log("Can't find the channel {}".format(location))
+    if args[1] not in [_.name for _ in [_ for _ in Nolka.get_server(server).channels]]:
+        await Nolka.send_message(bot, "I don't see the channel {}".format(args[1]))
         return
-    env[type] = list(filter(lambda _ : _.name == location, channels))[0]
-    await log("Set channel {} to {}".format(type, env[type].name))
+    env[server]["channels"][args[0]] = [_ for _ in Nolka.get_server(server).channels if _.name == args[1]][0].id
+    update()
+    await Nolka.send_message(bot, "Set {} channel to {}".format(args[0], args[1]))
     return
 
 # role manipulaiton group
@@ -175,12 +147,12 @@ async def give(ctx, *args):
     global env
     roles = [_ for _ in env["server"].roles if _.name.lower() in [_.lower() for _ in args]]
     if len(roles) is 0:
-        await log("I need at least one role")
+        await Nolka.say("I need at least one role")
         return
     for member in ctx.message.mentions:
         for role in roles:
             await Nolka.add_roles(member, role)
-            await log("gave role {} to user {}".format(role, member))
+            await Nolka.say("gave role {} to user {}".format(role, member))
     return
 
 # role take from user
@@ -190,52 +162,58 @@ async def take(ctx, *args):
     global env
     roles = [_ for _ in env["server"].roles if _.name.lower() in [_.lower() for _ in args]]
     if len(roles) is 0:
-        await log("I need at least one role")
+        await Nolka.say("I need at least one role")
         return
     if len(ctx.message.mentions) is 0:
-        await log("I need at least one user")
+        await Nolka.say("I need at least one user")
         return
     for member in ctx.message.mentions:
         await Nolka.remove_roles(member, *roles)
-    await log("took roles")
+    await Nolka.say("took roles")
     return
 
 # role create new role
-#-role create [roles] [users]
+#-role create [roles] *[users]
 @role.command(pass_context=True)
 async def create(ctx, *args):
     global env
     make = [_ for _ in args if "@" not in _]
     for role in make:
         if role.lower() in [_.name.lower() for _ in env["server"].roles]:
-            await log("There's already have a role called {} here".format(role))
+            await Nolka.say("There's already have a role called {} here".format(role))
         else:
             print(env["server"]); return
             await Nolka.create_role(env["server"], name = role)
-            await log("created role {}".format(role))
+            await Nolka.say("created role {}".format(role))
     if len(ctx.message.mentions) is not 0:
         for member in ctx.message.mentions:
             for role in [_ for _ in env["server"].roles if _.name.lower() in make]:
                 await Nolka.add_roles(member, role)
-                await log("gave role {} to user {}".format(role, member))
+                await Nolka.say("gave role {} to user {}".format(role, member))
     return
 
-#
+# role delete role
+#-role delete [roles]
 @role.command(pass_context=True)
 async def delete(ctx, *args):
     global env
     kill = [_ for _ in env["server"].roles if _.name in [k for k in args if "@" not in k]]
     if len(kill) is 0:
-        await log("Didn't find any roles to delete")
+        await Nolka.say("Didn't find any roles to delete")
         return
     for role in kill:
         if role.name.lower() not in [_.name.lower() for _ in env["server"].roles]:
-            await log("There's no role called {}".format(role))
+            await Nolka.say("There's no role called {}".format(role))
         else:
             await Nolka.delete_role(env["server"], role)
-            await log("Deleted role {}".format(role))
+            await Nolka.say("Deleted role {}".format(role))
     return
 
 # User
+
+@Nolka.command(pass_context=True)
+async def birthday(ctx, *args):
+
+    pass
 
 Nolka.run(token)

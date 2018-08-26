@@ -2,17 +2,24 @@
 
 
 ## Todo
+### Features
 - Add a command reference in README.md
 - User badges
 - Make intro and outro messages dynamic
 - Music bot
 - Add admin check
-
-## Current
 - Save user birthday
 - Command to show vegetable recipes
+### Maintenance
+- Rewrite the role commands to send unpacked lists to the discordpy library
+
+## Current
+- Rewrite with classes for multi channel
+- Make a `setup` command to load server info differently than init
+- Replacing `log` with `Nolka.say`
 
 ## Done
+- Rewriting `init` command
 - Make -role create be able to also assign roles
 - Delete roles
 - Don't add double roles
