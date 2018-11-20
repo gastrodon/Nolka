@@ -1,2 +1,4 @@
-src/token.*
-src/token.json
+src/*.json
+src/__*
+.ignore
+*.old
