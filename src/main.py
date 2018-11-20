@@ -39,6 +39,15 @@ def colored(color):
         return -1
     return discord.Color(int(color, 16))
 
+async def admin(ctx):
+    if not ctx.message.author.permissions_in(ctx.message.channel).administrator:
+        await Nolka.send_message(
+            Servers.get(ctx.message.server, "bot"),
+            embed = embedMessage(Messages.noAdmin, status = "error")
+        )
+        return False
+    return True
+
 # Bot events
 
 @Nolka.event
@@ -50,19 +59,19 @@ async def on_ready():
 
 # Bot commands
 
-# Testing command
-# -test *[arguments]
 @Nolka.command(pass_context = True)
 async def test(ctx, *args):
-    await Nolka.say(embed = embedMessage(
-        "This was a test",
-        title = "Title",
-        ctx = ctx
-    ))
+    await Nolka.send_message(
+        Servers.get(ctx.message.server, "bot"),
+        embed = embedMessage("Tested")
+    )
+
 
 @Nolka.command(pass_context = True)
 async def init(ctx, *args):
     global colors
+    if not await admin(ctx):
+        return
     if len(args) is 0 or args[0] == "here":
         Servers.initServer(
             ctx.message.server,
@@ -128,6 +137,29 @@ async def color(ctx, *args, type = "normal"):
         Servers.get(ctx.message.server, "bot"),
         embed = embedMessage(Messages.colorSet.format(type, args[0]), ctx = ctx)
     )
+
+@Nolka.group(pass_context = True)
+async def role(ctx):
+    if not await admin(ctx):
+        return
+    if ctx.invoked_subcommand is None:
+        await Nolka.send_message(
+            Servers.get(ctx.message.server, "bot"),
+            embed = embedMessage(Messages.noSubcommand, status = "error", ctx = ctx)
+        )
+
+@role.command(pass_context = True)
+async def give(ctx, *args):
+    args = [arg.lower() for arg in args if "@" not in arg]
+    roles = [role for role in ctx.message.server.roles if str(role).lower() in args]
+    print(ctx.message.server)
+    for arg in args:
+        if arg not in [str(role).lower() for role in ctx.message.server.roles]:
+            await Nolka.create_role(ctx.message.server, name = arg)
+
+@role.command(pass_context = True)
+async def create(ctx, *args):
+    await Nolka.create_role(ctx.message.server, name = "newrole")
 
 # Start the bot
 
