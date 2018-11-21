@@ -10,8 +10,10 @@ import discord.ext.commands as commands
 # Globals
 
 Nolka = commands.Bot(command_prefix = "-")
+
 with open("token.json") as doc:
     token = json.load(doc)["token"]
+
 Servers = Cache.Server()
 
 def embedMessage(description, ctx, status = "normal", color = discord.Color(0xff72bb), **kwargs):
