@@ -1,3 +1,10 @@
+"""
+Messages module for a Discord bot named Nolka.
+
+Author : Zero <dakoolstwunn@gmail.com>
+DOCS : Coming to readthedocs.io soon
+"""
+
 # Error messages
 missingArgs = "I'm missing some arguments"
 badArgs = "Those arguments don't work for me"

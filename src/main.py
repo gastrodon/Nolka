@@ -1,3 +1,9 @@
+"""
+A Discord bot named Nolka.
+
+Author : Zero <dakoolstwunn@gmail.com>
+DOCS : Coming to readthedocs.io soon
+"""
 import discord, json, datetime, Cache, Messages
 import discord.ext.commands as commands
 
@@ -9,6 +15,16 @@ with open("token.json") as doc:
 Servers = Cache.Server()
 
 def embedMessage(description, ctx, status = "normal", color = discord.Color(0xff72bb), **kwargs):
+    """
+    Macro for formatting embedded messages for Nolka to send as a message.
+
+    description - string : string containing the message body
+    ctx - context object : context to get color values assigned to the server
+    status - string : type of color to get, default "normal" for normal message accent colors
+    color - discord.Color : fallback color, in case the server is not initialized
+
+    returns : discord.Embed
+    """
     if status is not "failedInit":
         color = Servers.color(ctx.guild, status)
     message = discord.Embed(
@@ -20,6 +36,13 @@ def embedMessage(description, ctx, status = "normal", color = discord.Color(0xff
     return message
 
 def colored(color):
+    """
+    Return a base 16 integer representing a color, or -1 if none could be created from arguments.
+
+    color - string : string that may contain a hexadecimal color number
+
+    return - integer : base 16 integer or -1
+    """
     color = "0x{}".format(color.replace("0x", "").replace("#", "").lower())
     if len(color) is 5:
         color = "0x{}{}{}".format(*[x * 2 for x in color[2:]])
@@ -28,6 +51,13 @@ def colored(color):
     return discord.Color(int(color, 16))
 
 async def admin(ctx):
+    """
+    Return representation of a context author having admin permissions in a server.
+
+    ctx - context object : context to get message author and channel permissions
+
+    return - boolean
+    """
     if not ctx.message.author.permissions_in(ctx.channel).administrator:
         await Servers.get(ctx.guild, "bot").send(
             embed = embedMessage(Messages.noAdmin, ctx, status = "error")
@@ -39,6 +69,9 @@ async def admin(ctx):
 
 @Nolka.event
 async def on_ready():
+    """
+    Change the presence of Nolka when it is ready.
+    """
     await Nolka.change_presence(activity = discord.Game(
         name = datetime.datetime.now().strftime("Online since %B %dth %Y")
     ))
@@ -47,6 +80,12 @@ async def on_ready():
 
 @Nolka.command(pass_context = True)
 async def init(ctx, *args):
+    """
+    Initialize Nolka on a server.
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : specificic channel, or here or left blank for current channel from ctx
+    """
     colors = {
         "normal": discord.Color(0x82b1ff),
         "error": discord.Color(0xff72bb)
@@ -79,6 +118,13 @@ async def init(ctx, *args):
 
 @Nolka.command(pass_context = True)
 async def color(ctx, *args, type = "normal"):
+    """
+    Set the message color highlight on the server for different types of messages.
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : message type and hexadecimal color number, or just hexadecimal color number if no type supplied
+    type - string : fallback color type if no type is specified
+    """
     args = [*args]
     if len(args) is 0:
         await Servers.get(ctx.guild, "bot").send(
@@ -112,6 +158,11 @@ async def color(ctx, *args, type = "normal"):
 
 @Nolka.group(pass_context = True)
 async def role(ctx):
+    """
+    Command group for manipulating server roles.
+
+    ctx - context object : context to get server info and admin check, supplied from command
+    """
     if not await admin(ctx):
         return
     if ctx.invoked_subcommand is None:
@@ -121,6 +172,12 @@ async def role(ctx):
 
 @role.command(pass_context = True)
 async def give(ctx, *args):
+    """
+    Create and/or assign roles to users, as determined by arguments.
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : unsorted list of existing roles, new roles, and server members
+    """
     roles = [role for role in ctx.guild.roles if str(role).lower() in [arg.lower() for arg in args]]
     members = [member for member in ctx.guild.members if member.mention in args]
     for arg in args:
@@ -151,6 +208,12 @@ async def give(ctx, *args):
 
 @role.command(pass_context = True)
 async def take(ctx, *args):
+    """
+    Take roles from users.
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : unsorted list of existing roles and users
+    """
     roles = [role for role in ctx.guild.roles if str(role).lower() in [arg.lower() for arg in args]]
     members = [member for member in ctx.guild.members if member.mention in args]
     print(members)
@@ -182,6 +245,12 @@ async def take(ctx, *args):
 
 @role.command(pass_context = True)
 async def kill(ctx, *args):
+    """
+    Delete roles from a server.
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : list of existing roles
+    """
     roles = [role for role in ctx.guild.roles if str(role).lower() in [arg.lower() for arg in args]]
     if len(roles) is 0:
         await Servers.get(ctx.guild, "bot").send(
