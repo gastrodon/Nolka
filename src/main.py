@@ -3,7 +3,7 @@ import discord.ext.commands as commands
 
 # Globals
 
-Nolka = commands.Bot(command_prefix = "+")
+Nolka = commands.Bot(command_prefix = "-")
 with open("token.json") as doc:
     token = json.load(doc)["token"]
 Servers = Cache.Server()
