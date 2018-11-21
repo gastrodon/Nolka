@@ -71,11 +71,12 @@ class Server():
         self.map[server] = {
             "bot": channel,
             "color":{
-            **colors
+                **colors
             }
         }
-        print(self.map)
     def setColor(self, server, status, color):
         self.map[server]["color"][status] = color
     def color(self, server, status = "normal"):
         return self.map[server]["color"][status]
+    def colorTypes(self, server):
+        return [x for x in self.map[server]["color"]]
