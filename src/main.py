@@ -4,14 +4,14 @@ A Discord bot named Nolka.
 Author : Zero <dakoolstwunn@gmail.com>
 DOCS : Coming to readthedocs.io soon
 """
-import discord, json, datetime, Cache, Messages
+import discord, json, datetime, os, Cache, Messages
 import discord.ext.commands as commands
 
 # Globals
 
 Nolka = commands.Bot(command_prefix = "-")
 
-with open("token.json") as doc:
+with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as doc:
     token = json.load(doc)["token"]
 
 Servers = Cache.Server()
