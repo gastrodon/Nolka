@@ -28,3 +28,6 @@ rolesKilled = "Killed the roles {}"
 rolesRemoved = "Removed the roles {}"
 noRoles = "I can't find any roles"
 noMembers = "I can't find any users"
+
+#Invite messages
+inviteMessage = "Add me to your server [here]({})"

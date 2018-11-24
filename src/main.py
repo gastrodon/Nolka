@@ -12,7 +12,9 @@ import discord.ext.commands as commands
 Nolka = commands.Bot(command_prefix = "-")
 
 with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as doc:
-    token = json.load(doc)["token"]
+    stream = json.load(doc)
+    token = stream["token"]
+    invite = stream["invite"]
 
 Servers = Cache.Server()
 
@@ -27,8 +29,10 @@ def embedMessage(description, ctx, status = "normal", color = discord.Color(0xff
 
     returns : discord.Embed
     """
-    if status is not "failedInit":
+    if status is not "failedInit" and ctx is not None:
         color = Servers.color(ctx.guild, status)
+    if ctx is None:
+        color = discord.Color(0x82b1ff)
     message = discord.Embed(
         type = "rich",
         description = description,
@@ -78,6 +82,22 @@ async def on_ready():
         name = datetime.datetime.now().strftime("Online since %B %dth %Y")
     ))
 
+@Nolka.event
+async def on_message(message):
+    """
+    Process commands, or send an invite link response to a private message.
+
+    message - discord.Message : message object to reference, supplied from a message
+    """
+    if message.guild is None and message.author != Nolka.user:
+        global invite
+        await message.channel.send(
+            embed = embedMessage(
+                Messages.inviteMessage.format(invite), None
+            )
+        )
+        return
+    await Nolka.process_commands(message)
 # Bot Commands
 
 @Nolka.command(pass_context = True)
