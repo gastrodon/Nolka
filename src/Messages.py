@@ -1,3 +1,10 @@
+"""
+Messages module for a Discord bot named Nolka.
+
+Author : Zero <dakoolstwunn@gmail.com>
+DOCS : Coming to readthedocs.io soon
+"""
+
 # Error messages
 missingArgs = "I'm missing some arguments"
 badArgs = "Those arguments don't work for me"
@@ -21,3 +28,6 @@ rolesKilled = "Killed the roles {}"
 rolesRemoved = "Removed the roles {}"
 noRoles = "I can't find any roles"
 noMembers = "I can't find any users"
+
+#Invite messages
+inviteMessage = "Add me to your server [here]({})"
