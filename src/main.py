@@ -258,7 +258,7 @@ async def dump(ctx, *args):
         "size": 10,
         "begin": None
     }
-    for arg in [[mod.split(":")[0][1:], mod.split("=")[1]] for mod in args if mod[0] is "+"]:
+    for arg in [[mod.split("=")[0][1:], mod.split("=")[1]] for mod in args if mod[0] is "+"]:
         mods[arg[0]] = int(arg[1])
     images = response.dumpSequential(mods["size"], mods["begin"])
     if images is None:
@@ -275,13 +275,13 @@ async def dump(ctx, *args):
                 ), status = "error")
         )
         return
-    difference = mods["size"]
+    counter = 0
     for image in images:
-        difference -= 1
+        counter += 1
         if image.meta["source"] == "":
-            message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(mods["size"] - difference, mods["size"])
+            message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(counter, mods["size"])
         else:
-            message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(mods["size"] - difference, mods["size"])
+            message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(counter, mods["size"])
         await ctx.channel.send(
             embed = await embedMessage(
                 message,
