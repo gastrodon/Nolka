@@ -4,57 +4,43 @@ A Discord bot named Nolka.
 Author : Zero <dakoolstwunn@gmail.com>
 DOCS : Coming to readthedocs.io soon
 """
-import discord, json, datetime, os, Cache, Messages
+import discord, json, datetime, os, Booru, Messages
 import discord.ext.commands as commands
 
 # Globals
 
 Nolka = commands.Bot(command_prefix = "+")
 
+colors = {
+    "normal": discord.Color(0x82b1ff),
+    "error": discord.Color(0xff72bb)
+}
+
 with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as doc:
     stream = json.load(doc)
     token = stream["token"]
     invite = stream["invite"]
 
-Servers = Cache.Server()
-
-def embedMessage(description, ctx, status = "normal", color = discord.Color(0xff72bb), **kwargs):
+async def embedMessage(description, status = "normal", image = None, **kwargs):
     """
-    Macro for formatting embedded messages for Nolka to send as a message.
+    Macro for formatting embedded messages for Nolka to send.
 
     description - string : string containing the message body
-    ctx - context object : context to get color values assigned to the server
     status - string : type of color to get, default "normal" for normal message accent colors
-    color - discord.Color : fallback color, in case the server is not initialized
-
-    returns : discord.Embed
+    image - Bool | String : url for an image, or None
     """
-    if status is not "failedInit" and ctx is not None:
-        color = Servers.color(ctx.guild, status)
-    if ctx is None:
-        color = discord.Color(0x82b1ff)
+    global colors
     message = discord.Embed(
         type = "rich",
         description = description,
-        color = color,
+        color = colors[status],
         **kwargs
     )
+    if image:
+        message.set_image(
+            url = image
+        )
     return message
-
-def colored(color):
-    """
-    Return a base 16 integer representing a color, or -1 if none could be created from arguments.
-
-    color - string : string that may contain a hexadecimal color number
-
-    return - integer : base 16 integer or -1
-    """
-    color = "0x{}".format(color.replace("0x", "").replace("#", "").lower())
-    if len(color) is 5:
-        color = "0x{}{}{}".format(*[x * 2 for x in color[2:]])
-    if not sorted(["0" <= x <= "f" for x in color[2:]])[0]:
-        return -1
-    return discord.Color(int(color, 16))
 
 async def admin(ctx):
     """
@@ -65,8 +51,8 @@ async def admin(ctx):
     return - boolean
     """
     if not ctx.message.author.permissions_in(ctx.channel).administrator:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.noAdmin, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noAdmin, status = "error")
         )
         return False
     return True
@@ -97,91 +83,13 @@ async def on_message(message):
     if message.guild is None and message.author != Nolka.user:
         global invite
         await message.channel.send(
-            embed = embedMessage(
+            embed = await embedMessage(
                 Messages.inviteMessage.format(invite), None
             )
         )
         return
     await Nolka.process_commands(message)
 # Bot Commands
-
-@Nolka.command(pass_context = True)
-async def init(ctx, *args):
-    """
-    Initialize Nolka on a server.
-
-    ctx - context object : context to get server info, supplied from command
-    *args - string[] : specificic channel, or here or left blank for current channel from ctx
-    """
-    colors = {
-        "normal": discord.Color(0x82b1ff),
-        "error": discord.Color(0xff72bb)
-    }
-    if not await admin(ctx):
-        return
-    if len(args) is 0 or args[0] == "here":
-        Servers.initServer(
-            ctx.guild,
-            ctx.channel,
-            colors
-        )
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.initMessage, ctx)
-        )
-        return
-    if args[0] in [str(channel) for channel in ctx.guild.channels]:
-        Servers.initServer(
-            ctx.guild,
-            [channel for channel in ctx.guild.channels if str(channel) == args[0]][0],
-            colors
-        )
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.initMessage, ctx)
-        )
-        return
-    await ctx.channel.send(
-        embed = embedMessage(Messages.badChannel.format(args[0]), ctx, status = "failedInit")
-    )
-
-@Nolka.command(pass_context = True)
-async def color(ctx, *args, type = "normal"):
-    """
-    Set the message color highlight on the server for different types of messages.
-
-    ctx - context object : context to get server info, supplied from command
-    *args - string[] : message type and hexadecimal color number, or just hexadecimal color number if no type supplied
-    type - string : fallback color type if no type is specified
-    """
-    args = [*args]
-    if len(args) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.missingArgs, ctx, status = "error")
-        )
-        return
-    if len(args) is 2:
-        if args[0] not in Servers.colorTypes(ctx.guild):
-            await Servers.get(ctx.guild, "bot").send(
-                embed = embedMessage(Messages.colorTypes.format(
-                    "- {}\n" * len(Servers.colorTypes(ctx.guild))
-                ).format(
-                    *Servers.colorTypes(ctx.guild)
-                ), ctx, status = "error")
-            )
-            return
-        type = args.pop(0)
-    if colored(args[0]) is -1:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.badColor.format(args[0]), ctx, status = "error")
-        )
-        return
-    Servers.setColor(
-        ctx.guild,
-        type,
-        colored(args[0])
-    )
-    await Servers.get(ctx.guild, "bot").send(
-        embed = embedMessage(Messages.colorSet.format(type, args[0]), ctx)
-    )
 
 @Nolka.group(pass_context = True)
 async def role(ctx):
@@ -193,8 +101,8 @@ async def role(ctx):
     if not await admin(ctx):
         return
     if ctx.invoked_subcommand is None:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.noSubcommand, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noSubcommand, status = "error")
         )
 
 @role.command(pass_context = True)
@@ -211,26 +119,26 @@ async def give(ctx, *args):
         if arg.lower() not in [str(role).lower() for role in roles] and "@" not in arg:
             roles.append(await ctx.guild.create_role(name = arg))
     if len(roles) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.missingArgs, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.missingArgs, status = "error")
         )
     if len(members) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.rolesMade.format(
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.rolesMade.format(
                 "{} " * len(roles)
             ).format(
                 *[str(role) for role in roles]
-            ), ctx)
+            ))
         )
         return
     for member in members:
         await member.add_roles(*roles)
-    await Servers.get(ctx.guild, "bot").send(
-        embed = embedMessage(Messages.rolesGiven.format(
+    await ctx.channel.send(
+        embed = await embedMessage(Messages.rolesGiven.format(
             "{} " * len(members) , "{} " * len(roles)
         ).format(
             *[member.name for member in members], *[str(role) for role in roles]
-        ), ctx)
+        ))
     )
 
 @role.command(pass_context = True)
@@ -243,31 +151,29 @@ async def take(ctx, *args):
     """
     roles = [role for role in ctx.guild.roles if str(role).lower() in [arg.lower() for arg in args]]
     members = [member for member in ctx.guild.members if member.mention in args]
-    print(members)
-    print(roles)
     if len(args) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.missingArgs, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.missingArgs, status = "error")
         )
         return
     if len(roles) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-        embed = embedMessage(Messages.noRoles, ctx, status = "error")
+        await ctx.channel.send(
+        embed = await embedMessage(Messages.noRoles, status = "error")
         )
         return
     if len(members) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.noMembers, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noMembers, status = "error")
         )
         return
     for member in members:
         await member.remove_roles(*roles)
-    await Servers.get(ctx.guild, "bot").send(
-        embed = embedMessage(Messages.rolesTaken.format(
+    await ctx.channel.send(
+        embed = await embedMessage(Messages.rolesTaken.format(
             "{} " * len(members), "{} " * len(roles)
         ).format(
             *[member.name for member in members], *[str(role) for role in roles]
-        ), ctx)
+        ))
     )
 
 @role.command(pass_context = True)
@@ -280,20 +186,107 @@ async def kill(ctx, *args):
     """
     roles = [role for role in ctx.guild.roles if str(role).lower() in [arg.lower() for arg in args]]
     if len(roles) is 0:
-        await Servers.get(ctx.guild, "bot").send(
-            embed = embedMessage(Messages.missingArgs, ctx, status = "error")
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.missingArgs, status = "error")
         )
         return
     for role in roles:
         await role.delete()
-    await Servers.get(ctx.guild, "bot").send(
-        embed = embedMessage(
+    await ctx.channel.send(
+        embed = await embedMessage(
             Messages.rolesKilled.format(
                 "{} " * len(roles)
             ).format(
                 *[str(role) for role in roles]
-            ), ctx
+            )
         )
     )
+
+@Nolka.group(pass_context = True)
+async def booru(ctx):
+    """
+    Command group for querying gelbooru.
+
+    ctx - context object : context to get server info, supplied from command
+    """
+    if ctx.invoked_subcommand is None:
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noSubcommand, status = "error")
+        )
+
+@booru.command(pass_context = True)
+async def search(ctx, *args):
+    """
+    Query gelbooru for an image for given tags
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : unsorted collection of tags
+    """
+    response = Booru.PostList(*args)
+    image = response.random()
+    if image is None:
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noPosts.format(
+                "".join(["{} ".format(arg) for arg in args])
+            ), status = "error")
+        )
+        return
+    if image.meta["source"] == "":
+        message = Messages.descNoSource.format(image.meta["rating"].upper())
+    else:
+        message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"])
+    await ctx.channel.send(
+        embed = await embedMessage(
+            message,
+            image = image.url
+        )
+    )
+
+@booru.command(pass_context = True)
+async def dump(ctx, *args):
+    """
+    Dump a number of images for images for given tags
+
+    ctx - context object : context to get server info, supplied from command
+    *args - string[] : unsorted collection of tags and arguments
+    *args - size - int : number of items to dump, default 10
+    *args - begin - int : post index to start dumping, default None
+    """
+    tags = [arg for arg in args if arg[0] is not "+"]
+    response = Booru.PostList(*tags)
+    mods = {
+        "size": 10,
+        "begin": None
+    }
+    for arg in [[mod.split(":")[0][1:], mod.split("=")[1]] for mod in args if mod[0] is "+"]:
+        mods[arg[0]] = int(arg[1])
+    images = response.dumpSequential(mods["size"], mods["begin"])
+    if images is None:
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.noPosts.format(
+                "".join(["{} ".format(arg) for arg in args])
+            ), status = "error")
+        )
+        return
+    if images is "badSize":
+        await ctx.channel.send(
+            embed = await embedMessage(Messages.largeDump.format(
+                mods["size"]
+                ), status = "error")
+        )
+        return
+    difference = mods["size"]
+    for image in images:
+        difference -= 1
+        if image.meta["source"] == "":
+            message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(mods["size"] - difference, mods["size"])
+        else:
+            message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(mods["size"] - difference, mods["size"])
+        await ctx.channel.send(
+            embed = await embedMessage(
+                message,
+                image = image.url
+            )
+        )
 
 Nolka.run(token)
