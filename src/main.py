@@ -122,6 +122,7 @@ async def give(ctx, *args):
         await ctx.channel.send(
             embed = await embedMessage(Messages.missingArgs, status = "error")
         )
+        return
     if len(members) is 0:
         await ctx.channel.send(
             embed = await embedMessage(Messages.rolesMade.format(
