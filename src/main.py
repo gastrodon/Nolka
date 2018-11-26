@@ -64,8 +64,13 @@ async def on_ready():
     """
     Change the presence of Nolka when it is ready.
     """
+    ftime = [
+        datetime.datetime.now().strftime("%B"),
+        datetime.datetime.now().strftime("%d"),
+        datetime.datetime.now().strftime("%Y")
+    ]
     await Nolka.change_presence(activity = discord.Game(
-        name = datetime.datetime.now().strftime("Online since %B %dth %Y")
+        name = datetime.datetime.now().strftime("Online since %{} %{}th %{}".format(*ftime))
     ))
 
 @Nolka.event
