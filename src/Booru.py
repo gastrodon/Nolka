@@ -107,5 +107,5 @@ class PostList:
             begin = randrange(100 - size)
         list = []
         if begin > size:
-            begin = 0
+            begin = 0 
         return [self.single(index) for index in range(begin, begin + size)]
