@@ -279,9 +279,9 @@ async def dump(ctx, *args):
     for image in images:
         counter += 1
         if image.meta["source"] == "":
-            message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(counter, mods["size"])
+            message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(counter, len(images))
         else:
-            message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(counter, mods["size"])
+            message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(counter, len(imags))
         await ctx.channel.send(
             embed = await embedMessage(
                 message,
