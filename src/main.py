@@ -9,7 +9,7 @@ import discord.ext.commands as commands
 
 # Globals
 
-Nolka = commands.Bot(command_prefix = "+")
+Nolka = commands.Bot(command_prefix = "-")
 
 colors = {
     "normal": discord.Color(0x82b1ff),
