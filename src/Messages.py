@@ -12,9 +12,6 @@ badChannel = "The channel {} doesn't exist on this server"
 noAdmin = "I don't see you on the list"
 noSubcommand = "I'm missing a subcommand"
 
-# Initialize messages
-initMessage = "Initialized myself in this channel"
-
 # Color messages
 colorSet = "Set the {} color to {}"
 colorTypes = "These are the valid color types\n{}"
@@ -31,3 +28,12 @@ noMembers = "I can't find any users"
 
 #Invite messages
 inviteMessage = "Add me to your server [here]({})"
+
+#Booru messages
+descSingleImage = "Rating: {}\n[Source]({})"
+descNoSource = "Rating: {}\nNo source provided"
+
+#Booru Error message
+noPosts = "No images found with the tags {}"
+dumpIndex = "Image {} of {}"
+largeDump = "{} is too many images for me to dump at once"
