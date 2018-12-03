@@ -29,11 +29,15 @@ noMembers = "I can't find any users"
 #Invite messages
 inviteMessage = "Add me to your server [here]({})"
 
+#Cogs messages
+cogsLoaded = "Loaded the cogs {}"
+cogsUnloaded = "Unloaded the cogs {}"
+cogsNotLoaded = "Failed loading the cogs {}"
+cogsNotUnloaded = "Failed unloading the cogs {}"
+
 #Booru messages
 descSingleImage = "Rating: {}\n[Source]({})"
 descNoSource = "Rating: {}\nNo source provided"
-
-#Booru Error message
 noPosts = "No images found with the tags {}"
 dumpIndex = "Image {} of {}"
 largeDump = "{} is too many images for me to dump at once"

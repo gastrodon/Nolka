@@ -5,7 +5,7 @@ Author : Zero <dakoolstwunn@gmail.com>
 DOCS : Coming soon
 """
 
-import discord, json, os, datetime
+import discord, json, os, datetime, sys, traceback
 from enum import Enum
 from discord.ext import commands
 
@@ -13,6 +13,9 @@ class Cogs:
     safe = [
         "cogs.admin",
         "cogs.booru"
+    ]
+    unstable = [
+        "cogs.update"
     ]
 
 with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as stream:
@@ -24,7 +27,19 @@ Nolka = commands.Bot(
 )
 
 for cog in Cogs.safe:
-    Nolka.load_extension(cog)
+    try:
+        Nolka.load_extension(cog)
+    #TODO: Post to an error log hosted somewhere
+    #https://github.com/basswaver/Nolka/issues/4
+    except:
+        print(f"There was an issue loading {cog}")
+if "--unstable" in sys.argv:
+    for cog in Cogs.unstable:
+        try:
+            Nolka.load_extension(cog)
+        except:
+            print(f"There was an issue loading unstable {cog}")
+            traceback.print_exc()
 
 #TODO: I have no idea how the presence is supposed to work
 @Nolka.event

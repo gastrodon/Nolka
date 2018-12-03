@@ -8,6 +8,12 @@ def admin(ctx):
     """
     return ctx.message.author.permissions_in(ctx.channel).administrator
 
+def snakeEater(ctx):
+    """
+    What a thrill, with darkness and silence through the night
+    """
+    return ctx.author.id in [134376825190088704]
+
 class Color():
     message = discord.Color(0x82b1ff)
     error = discord.Color(0xff72bb)
