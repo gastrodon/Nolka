@@ -18,7 +18,7 @@ class PostList:
         self - class : this object
         *args - string[] : tags to query
         """
-        with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as doc:
+        with open(os.path.dirname(os.path.realpath(__file__))+"/../token.json") as doc:
             stream = json.load(doc)
             api = stream["gelbooruAPI"]
             id = stream["gelbooruID"]
@@ -105,7 +105,5 @@ class PostList:
         size = min([size, len(self.parsed.posts) - 1])
         if not begin:
             begin = randrange(100 - size)
-        list = []
-        if begin > size:
-            begin = 0 
+        print(range(begin, begin + size))
         return [self.single(index) for index in range(begin, begin + size)]

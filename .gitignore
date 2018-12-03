@@ -1,4 +1,4 @@
-src/*.json
-src/__*
+*.json
+__*
 .ignore
 *.old
