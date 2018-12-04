@@ -6,6 +6,8 @@ import traceback
 from libs import Macro, Messages
 from discord.ext import commands
 
+#TODO Refresh command to load and unload a cog
+
 class Update:
     def __init__(self, bot):
         self.bot = bot

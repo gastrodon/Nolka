@@ -15,7 +15,8 @@ class Cogs:
         "cogs.booru"
     ]
     unstable = [
-        "cogs.update"
+        "cogs.update",
+        "cogs.utils"
     ]
 
 with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as stream:
@@ -47,15 +48,10 @@ async def on_ready():
     """
     Change the presence of Nolka when it is ready.
     """
-    ftime = [
-        datetime.datetime.now().strftime("%B"),
-        datetime.datetime.now().strftime("%d"),
-        datetime.datetime.now().strftime("%Y")
-    ]
     await Nolka.change_presence(activity = discord.Game(
-        name = datetime.datetime.now().strftime("Online since %{} %{}th %{}".format(*ftime)),
+        name = datetime.datetime.now().strftime("with cogs"),
         type = 1,
-        description = "desc"
+        description = "Hello, world!"
     ))
 
 Nolka.run(token)
