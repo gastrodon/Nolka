@@ -2,7 +2,6 @@
 Dynamic cogs for a bot named Nolka
 """
 
-import traceback
 from libs import Macro, Messages
 from discord.ext import commands
 

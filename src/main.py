@@ -31,7 +31,7 @@ for cog in Cogs.safe:
         Nolka.load_extension(cog)
     #TODO: Post to an error log hosted somewhere
     #https://github.com/basswaver/Nolka/issues/4
-except ModuleNotFoundError:
+    except ModuleNotFoundError:
         print(f"There was an issue loading {cog}")
 
 if "--unstable" in sys.argv:
