@@ -34,4 +34,6 @@ use `touch src/token.json` to create a token file and format it and format it in
 
 - start the bot
 
-After you've done all of that, you should be able to start using Nolka by getting your bot's link and adding it to your server. If that doesn't work, please [open an issue](https://github.com/basswaver/Nolka/issues/new)
+After you've done all of that, you should be able to start using Nolka by getting your bot's link and adding it to your server. Check out the [docs](DOCS.md) to learn about the bot's use
+
+If you run into any issues, please [open an issue](https://github.com/basswaver/Nolka/issues/new)
