@@ -72,14 +72,14 @@ class Booru:
             )
             return
         counter = 0
-        max = len(images)
+        imageMax = len(images)
         for image in images:
             counter += 1
             #TODO: use length method
             if image.meta["source"] == "":
-                message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(counter, max)
+                message = Messages.descNoSource.format(image.meta["rating"].upper()) + "\n" + Messages.dumpIndex.format(counter, imageMax)
             else:
-                message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(counter, max)
+                message = Messages.descSingleImage.format(image.meta["rating"].upper(), image.meta["source"]) + "\n" + Messages.dumpIndex.format(counter, imageMax)
             await ctx.channel.send(
                 embed = await Macro.Embed.image(image.url, description = message)
             )

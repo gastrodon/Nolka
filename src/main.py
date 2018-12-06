@@ -6,17 +6,16 @@ DOCS : Coming soon
 """
 
 import discord, json, os, datetime, sys, traceback
-from enum import Enum
 from discord.ext import commands
 
 class Cogs:
     safe = [
         "cogs.admin",
-        "cogs.booru"
-    ]
-    unstable = [
+        "cogs.booru",
         "cogs.update",
         "cogs.utils"
+    ]
+    unstable = [
     ]
 
 with open(os.path.dirname(os.path.realpath(__file__))+"/token.json") as stream:
@@ -32,13 +31,14 @@ for cog in Cogs.safe:
         Nolka.load_extension(cog)
     #TODO: Post to an error log hosted somewhere
     #https://github.com/basswaver/Nolka/issues/4
-    except:
+except ModuleNotFoundError:
         print(f"There was an issue loading {cog}")
+
 if "--unstable" in sys.argv:
     for cog in Cogs.unstable:
         try:
             Nolka.load_extension(cog)
-        except:
+        except ModuleNotFoundError:
             print(f"There was an issue loading unstable {cog}")
             traceback.print_exc()
 

@@ -10,13 +10,18 @@ class Utils:
         self.bot = bot
 
     @commands.command(pass_context = True)
-    async def ping(self, ctx):
+    async def ping(self, ctx, count = 1):
         """
         Return the bot's latency
         """
-        await ctx.channel.send(
-            embed = await Macro.Embed.message(str(self.bot.latency))
-        )
+        try:
+            int(count)
+        except ValueError:
+            count = 1
+        for _ in range(int(count)):
+            await ctx.channel.send(
+                embed = await Macro.Embed.message(Messages.pingms.format(self.bot.latency * 1000))
+            )
 
 def setup(bot):
     bot.add_cog(Utils(bot))
