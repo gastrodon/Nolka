@@ -26,14 +26,22 @@ rolesRemoved = "Removed the roles {}"
 noRoles = "I can't find any roles"
 noMembers = "I can't find any users"
 
-#Invite messages
+# Invite messages
 inviteMessage = "Add me to your server [here]({})"
 
-#Booru messages
+# Cogs messages
+cogsLoaded = "Loaded the cogs {}"
+cogsUnloaded = "Unloaded the cogs {}"
+cogsNotLoaded = "Failed loading the cogs {}"
+cogsNotUnloaded = "Failed unloading the cogs {}"
+cogsReloaded = "Reloaded the cogs {}"
+
+# Booru messages
 descSingleImage = "Rating: {}\n[Source]({})"
 descNoSource = "Rating: {}\nNo source provided"
-
-#Booru Error message
 noPosts = "No images found with the tags {}"
 dumpIndex = "Image {} of {}"
 largeDump = "{} is too many images for me to dump at once"
+
+# Utils commands
+pingms = "{:.1f}ms"

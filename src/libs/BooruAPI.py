@@ -105,5 +105,4 @@ class PostList:
         size = min([size, len(self.parsed.posts) - 1])
         if not begin:
             begin = randrange(100 - size)
-        print(range(begin, begin + size))
         return [self.single(index) for index in range(begin, begin + size)]
