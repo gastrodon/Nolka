@@ -23,5 +23,11 @@ class Utils:
                 embed = await Macro.Embed.message(Messages.pingms.format(self.bot.latency * 1000))
             )
 
+    @commands.command(pass_context = True)
+    async def help(self, ctx, *args):
+        if len(args) is 0:
+            await ctx.channel.send()
+
+
 def setup(bot):
     bot.add_cog(Utils(bot))

@@ -26,6 +26,8 @@ Nolka = commands.Bot(
     description = "A bot named Nolka"
 )
 
+Nolka.remove_command("help")
+
 for cog in Cogs.safe:
     try:
         Nolka.load_extension(cog)

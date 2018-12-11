@@ -32,7 +32,7 @@ use `touch src/token.json` to create a token file and format it and format it in
 }
 ```
 
--   start the bot
+-   adding the bot
 
 After you've done all of that, you should be able to start using Nolka by getting your bot's link and adding it to your server. Check out the [docs](DOCS.md) to learn about the bot's use
 
