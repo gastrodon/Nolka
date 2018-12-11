@@ -16,7 +16,7 @@ class Booru:
         """
         if ctx.invoked_subcommand is None:
             await ctx.channel.send(
-                embed = await Macro.Embed.message(Messages.noSubcommand)
+                embed = await Macro.Embed.error(Messages.noSubcommand)
             )
 
     @booru.command(pass_context = True, aliases = ["query", "random"])
@@ -68,7 +68,7 @@ class Booru:
         images = response.dumpSequential(mods["size"], mods["begin"])
         if images is None:
             await ctx.channel.send(
-                embed = await Macro.Embed.error(Message.noPosts.format(", ".join(tags)))
+                embed = await Macro.Embed.error(Messages.noPosts.format(", ".join(tags)))
             )
             return
         counter = 0
