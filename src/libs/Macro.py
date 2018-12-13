@@ -52,3 +52,24 @@ class Embed:
         message = await cls.message(description, **kwargs)
         message.set_image(url = url)
         return message
+
+    @classmethod
+    async def help(cls, title, helpitems, **kwargs):
+        """
+        Macro for a help message for Nolka to send
+
+        title: string - title of the message
+        helpitems: tuple - command-docstring pairs
+        """
+        message = discord.Embed(
+            type = "rich",
+            title = title,
+            color = kwargs.get("color", Color.message)
+        )
+        for item in helpitems:
+            message.add_field(
+                name = item[0],
+                value = item[1],
+                inline = False
+            )
+        return message
