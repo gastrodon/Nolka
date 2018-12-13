@@ -12,6 +12,9 @@ class Update:
         self.bot = bot
 
     def _load(self, *args):
+        """
+        Private method for loading cogs
+        """
         for arg in args:
             try:
                 self.bot.load_extension(arg)
@@ -20,6 +23,9 @@ class Update:
                 yield False
 
     def _unload(self, *args):
+        """
+        Private method for unloading cogs
+        """
         for arg in args:
             self.bot.unload_extension(arg)
 
