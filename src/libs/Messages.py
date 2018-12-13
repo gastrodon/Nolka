@@ -45,3 +45,6 @@ largeDump = "{} is too many images for me to dump at once"
 
 # Utils commands
 pingms = "{:.1f}ms"
+helpTemplate = "Help"
+helpItem = "`{}`: {}"
+noDocstring = "No docstring"
