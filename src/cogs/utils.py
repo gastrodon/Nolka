@@ -33,13 +33,16 @@ class Utils:
         """
         Return the bot's latency
         """
+        latency = self.bot.latency * 1000
         try:
             int(count)
         except ValueError:
             count = 1
         for _ in range(int(count)):
             await ctx.channel.send(
-                embed = await Macro.Embed.message(Messages.pingms.format(self.bot.latency * 1000))
+                embed = await Macro.Embed.message(
+                    Messages.pingms.format(latency)
+                )
             )
 
     @commands.command(pass_context = True)
@@ -59,6 +62,19 @@ class Utils:
                 helpitems
             )
         )
+
+    @commands.command(pass_context = True)
+    async def latest(self, ctx, *args):
+        """
+        Test to make sure that everything was updated
+        """
+        # TODO: This should not be hard coded, instead fetched from somewhere that I control
+        await ctx.channel.send(
+            embed = await Macro.Embed.message(
+                Messages.latest
+            )
+        )
+
 
 def setup(bot):
     bot.add_cog(Utils(bot))
