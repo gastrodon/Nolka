@@ -13,7 +13,8 @@ class Cogs:
         "cogs.admin",
         "cogs.booru",
         "cogs.update",
-        "cogs.utils"
+        "cogs.utils",
+        "cogs.private"
     ]
     unstable = [
     ]
