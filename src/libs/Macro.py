@@ -14,32 +14,37 @@ def snakeEater(ctx):
     """
     return ctx.author.id in [134376825190088704]
 
-class Color():
-    message = discord.Color(0x82b1ff)
-    error = discord.Color(0xff72bb)
-
 class Embed:
     @staticmethod
     async def message(description, **kwargs):
         """
-        Macro for normal messages for Nolka to send
+        Macro for normal messages
 
         description: string - message text
         """
         return discord.Embed(
             type = "rich",
             description = description,
-            color = kwargs.get("color", Color.message),
+            color = kwargs.get("color", discord.Color(0x82b1ff)),
         )
 
     @classmethod
     async def error(cls, description, **kwargs):
         """
-        Macro for error messages for Nolka to send
+        Macro for error messages
 
         description: string - message text
         """
-        return await cls.message(description, color = Color.error)
+        return await cls.message(description, color = discord.Color(0xff72bb))
+
+    @classmethod
+    async def infraction(cls, description, **kwargs):
+        """
+        Macro for infraction messages
+
+        description: string - message text
+        """
+        return await cls.message(description, color = discord.Color(0xffee75))
 
     @classmethod
     async def image(cls, url, description = None, **kwargs):

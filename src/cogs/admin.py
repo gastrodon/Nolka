@@ -2,7 +2,8 @@
 Server management for a bot named Nolka
 """
 
-from libs import Macro, Messages
+import discord, typing
+from libs import Macro, Messages, Checks
 from discord.ext import commands
 
 class Admin:
@@ -10,6 +11,7 @@ class Admin:
         self.bot = bot
 
     @commands.group(pass_context = True)
+    @commands.check(Checks.manage_roles)
     async def role(self, ctx):
         """
         Group for manipulating guild roles.
@@ -20,7 +22,6 @@ class Admin:
             )
 
     @role.command(pass_context = True, aliases = ["create", "new"])
-    @commands.check(Macro.admin)
     async def give(self, ctx, *args):
         """
         Give roles to guild members. If they don't exist, create them.
@@ -52,8 +53,7 @@ class Admin:
             ))
         )
 
-    @role.command(pass_context = True)
-    @commands.check(Macro.admin)
+    @role.command(pass_context = True, aliases = ["remove"])
     async def take(self, ctx, *args):
         """
         Take roles from guild members.
@@ -74,8 +74,7 @@ class Admin:
             ))
         )
 
-    @role.command(pass_context = True, aliases = ["remove", "delete"])
-    @commands.check(Macro.admin)
+    @role.command(pass_context = True, aliases = ["delete"])
     async def kill(self, ctx, *args):
         """
         Delete roles from the guild.
@@ -94,6 +93,40 @@ class Admin:
                 ", ".join(map(str, roles))
             ))
         )
+
+    async def _notify(self, ctx, user, type, reason):
+        if user.dm_channel is None:
+            await user.create_dm()
+        await user.dm_channel.send(
+            embed = await Macro.Embed.infraction(
+                Messages.removedGeneric.format(type, ctx.guild, reason)
+            )
+        )
+        return
+
+    @commands.command(pass_context = True, aliases = ["hammer"])
+    @commands.check(Checks.ban_members)
+    async def ban(self, ctx, user: typing.Union[discord.Member], *, reason = Messages.noReason):
+        await self._notify(ctx, user, "banned", reason)
+        await ctx.guild.ban(user, reason = reason)
+        await ctx.send(
+            embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))
+        )
+
+
+    @commands.command(pass_context = True)
+    @commands.check(Checks.kick_members)
+    async def kick(self, ctx, user: typing.Union[discord.Member], *, reason = Messages.noReason):
+        await self._notify(ctx, user, "kicked", reason)
+        await ctx.guild.kick(user, reason = reason)
+        await ctx.send(
+            embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))
+        )
+
+    @commands.command(pass_context = True)
+    @commands.check(Checks.gaggle)
+    async def mute(self, ctx, user: typing.Union[discord.Member], *, reason = Messages.noReason):
+        pass
 
 def setup(bot):
     bot.add_cog(Admin(bot))

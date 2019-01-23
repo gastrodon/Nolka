@@ -63,18 +63,6 @@ class Utils:
             )
         )
 
-    @commands.command(pass_context = True)
-    async def latest(self, ctx, *args):
-        """
-        Test to make sure that everything was updated
-        """
-        # TODO: This should not be hard coded, instead fetched from somewhere that I control
-        await ctx.channel.send(
-            embed = await Macro.Embed.message(
-                Messages.latest
-            )
-        )
-
 
 def setup(bot):
     bot.add_cog(Utils(bot))
