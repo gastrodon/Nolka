@@ -6,11 +6,13 @@ DOCS : Coming to readthedocs.io soon
 """
 
 # Error messages
-missingArgs = "I'm missing some arguments"
-badArgs = "Those arguments don't work for me"
-badChannel = "The channel {} doesn't exist on this server"
-noAdmin = "I don't see you on the list"
+MissingRequiredArgument = "I'm missing some arguments"
+BadArgument = "Those arguments don't work"
+MissingPermissions = "You don't have permission to do that"
 noSubcommand = "I'm missing a subcommand"
+unknownUser = "I don't know who {} is"
+UserInputError = "Theres a problem with that command"
+Forbidden = "a 403 error was returned: Forbidden"
 
 # Color messages
 colorSet = "Set the {} color to {}"
@@ -25,6 +27,16 @@ rolesKilled = "Killed the roles {}"
 rolesRemoved = "Removed the roles {}"
 noRoles = "I can't find any roles"
 noMembers = "I can't find any users"
+
+# Infraction commands
+goodbye = "Goodbye {}"
+
+# Private messages
+banned = "You were banned from the server {}\n{}"
+reasonGiven = "Reason given: {}"
+noReason = "No reason was given"
+dmsClosed = "DM's for {} are closed"
+removedGeneric = "You have been {} from the server {}\nReason given: {}"
 
 # Invite messages
 inviteMessage = "Add me to your server [here]({})"
@@ -48,4 +60,3 @@ pingms = "{:.1f}ms"
 helpTemplate = "Help"
 helpItem = "`{}`: {}"
 noDocstring = "No docstring"
-latest = "867c7d5 on branch Master"
