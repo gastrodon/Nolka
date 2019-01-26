@@ -1,4 +1,5 @@
 *.json
-__py*
+__*
 .ignore
 *.old
+font

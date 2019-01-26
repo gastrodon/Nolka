@@ -11,6 +11,11 @@ class Update:
     def __init__(self, bot):
         self.bot = bot
 
+    def snakeEater():
+        def wrapped(ctx):
+            return ctx.author.id in {134376825190088704}
+        return commands.check(wrapped)
+
     def _load(self, *args):
         """
         Private method for loading cogs
@@ -29,16 +34,14 @@ class Update:
         for arg in args:
             self.bot.unload_extension(arg)
 
-    @commands.group(pass_context = True, aliases = ["extension", "package"])
-    @commands.check(Macro.snakeEater)
+    @commands.group(pass_context = True)
+    @snakeEater()
     async def cog(self, ctx):
         """
         Group for loading, unloading, and modifying command groups
         """
         if ctx.invoked_subcommand is None:
-            await ctx.channel.send(
-                embed = await Macro.Embed.error(Messages.noSubcommand)
-            )
+            pass
 
     @cog.command(pass_context = True, aliases = ["add"])
     async def load(self, ctx, *args):
@@ -60,7 +63,7 @@ class Update:
             index += 1
         if success:
             await ctx.channel.send(
-                embed = await Macro.Embed.message(Messages.cogsLoaded.format(", ".join(success)))
+                embed = await Macro.send(Messages.cogsLoaded.format(", ".join(success)))
             )
         if failure:
             await ctx.channel.send(
@@ -81,7 +84,7 @@ class Update:
         #TODO: use a generator here too
         self._unload(*args)
         await ctx.channel.send(
-            embed = await Macro.Embed.message(Messages.cogsUnloaded.format(", ".join(args)))
+            embed = await Macro.send(Messages.cogsUnloaded.format(", ".join(args)))
         )
 
     # TODO: have no arguments reload all cogs
@@ -104,12 +107,26 @@ class Update:
             success.append(args[index]) if status else failure.append(args[index])
         if success:
             await ctx.channel.send(
-                embed = await Macro.Embed.message(Messages.cogsReloaded.format(", ".join(success)))
+                embed = await Macro.send(Messages.cogsReloaded.format(", ".join(success)))
             )
         if failure:
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.cogsNotLoaded.format(", ".join(failure)))
             )
+
+    @commands.group(pass_context = True)
+    @snakeEater()
+    async def update(self, ctx):
+        """
+        Group for updating certain things
+        """
+        if ctx.invoked_subcommand is None:
+            pass
+
+    @update.command(pass_context = True)
+    async def modsquad(self, ctx):
+        await self.bot.update_modsquad()
+
 
 def setup(bot):
     bot.add_cog(Update(bot))

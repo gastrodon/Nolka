@@ -40,7 +40,7 @@ class Utils:
             count = 1
         for _ in range(int(count)):
             await ctx.channel.send(
-                embed = await Macro.Embed.message(
+                embed = await Macro.send(
                     Messages.pingms.format(latency)
                 )
             )
@@ -60,18 +60,6 @@ class Utils:
             embed = await Macro.Embed.help(
                 messageDesc,
                 helpitems
-            )
-        )
-
-    @commands.command(pass_context = True)
-    async def latest(self, ctx, *args):
-        """
-        Test to make sure that everything was updated
-        """
-        # TODO: This should not be hard coded, instead fetched from somewhere that I control
-        await ctx.channel.send(
-            embed = await Macro.Embed.message(
-                Messages.latest
             )
         )
 

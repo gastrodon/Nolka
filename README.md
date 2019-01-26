@@ -27,6 +27,7 @@ use `touch src/token.json` to create a token file and format it and format it in
 ```json
 {
     "token": "(your discord bot oauth token)",
+    "invite": "(your discord bot invite link)"
     "gelbooruAPI": "(your gelbooru api key)",
     "gelbooruID": "(your gelbooru account id)"
 }
