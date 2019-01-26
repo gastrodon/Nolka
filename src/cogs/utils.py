@@ -40,7 +40,7 @@ class Utils:
             count = 1
         for _ in range(int(count)):
             await ctx.channel.send(
-                embed = await Macro.Embed.message(
+                embed = await Macro.send(
                     Messages.pingms.format(latency)
                 )
             )

@@ -8,12 +8,6 @@ def admin(ctx):
     """
     return ctx.message.author.permissions_in(ctx.channel).administrator
 
-def snakeEater(ctx):
-    """
-    What a thrill, with darkness and silence through the night
-    """
-    return ctx.author.id in [134376825190088704]
-
 class Embed:
     @staticmethod
     async def message(description, **kwargs):
@@ -69,7 +63,7 @@ class Embed:
         message = discord.Embed(
             type = "rich",
             title = title,
-            color = kwargs.get("color", Color.message)
+            color = kwargs.get("color", discord.Color(0x82b1ff))
         )
         for item in helpitems:
             message.add_field(
@@ -78,3 +72,5 @@ class Embed:
                 inline = False
             )
         return message
+
+send = Embed.message
