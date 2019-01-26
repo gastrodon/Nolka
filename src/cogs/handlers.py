@@ -12,19 +12,18 @@ class ErrorHandler:
         ignored = (commands.CommandNotFound, commands.UserInputError)
 
         if isinstance(error, ignored):
-            pass
+            return
 
         if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven)):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.MissingRequiredArgument)
             )
             return
-            """
         if isinstance(error, commands.BadArgument):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.BadArgument)
             )
-            return"""
+            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
