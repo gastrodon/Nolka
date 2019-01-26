@@ -36,7 +36,7 @@ async def on_ready():
     """
     Change the presence of Nolka when it is ready.
     """
-    await Nolka.update_modsquad()
+    await Nolka.async_init()
     await Nolka.change_presence(activity = discord.Game(
         name = "on {} servers".format(len(Nolka.guilds)),
     ))

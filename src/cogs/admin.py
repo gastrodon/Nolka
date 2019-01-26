@@ -161,7 +161,7 @@ class Commands:
     @commands.command(pass_context = True, aliases = ["hammer"])
     @modcheck()
     async def ban(self, ctx, user: discord.Member, *, reason = Messages.noReason):
-        await self._notify(ctx, user, "banned", reason)
+        await Workers._notify(ctx, user, "banned", reason)
         await ctx.guild.ban(user, reason = reason)
         await ctx.send(
             embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))
@@ -170,7 +170,7 @@ class Commands:
     @commands.command(pass_context = True)
     @modcheck()
     async def kick(self, ctx, user: discord.Member, *, reason = Messages.noReason):
-        await self._notify(ctx, user, "kicked", reason)
+        await Workers._notify(ctx, user, "kicked", reason)
         await ctx.guild.kick(user, reason = reason)
         await ctx.send(
             embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))

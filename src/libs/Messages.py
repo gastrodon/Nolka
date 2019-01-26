@@ -12,6 +12,7 @@ MissingPermissions = "You don't have permission to do that"
 UserInputError = "Theres a problem with that command"
 Forbidden = "I'm not allowed to do that"
 CacheReadError = "The cache was not readable, perms need to be reset"
+traceback = "Autoreported from guild {} at {}\nException in command {}\n{} {}"
 
 # Role messages
 rolesMade = "Created the roles {}"

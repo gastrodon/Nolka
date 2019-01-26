@@ -10,3 +10,10 @@ class CachedBot(commands.Bot):
     async def update_modsquad(self):
         for guild in self.guilds:
             await self.mods.setup(guild)
+
+    async def update_reporting_channel(self, guild_id, channel_id):
+        self.log = self.get_guild(guild_id).get_channel(channel_id)
+
+    async def async_init(self):
+        await self.update_reporting_channel()
+        await self.update_modsquad()
