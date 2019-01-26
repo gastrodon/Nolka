@@ -1,5 +1,5 @@
 import discord, sys, traceback
-from libs import Macro, Messages
+from libs import Macro, Messages, Tools
 from discord.ext import commands
 
 class ErrorHandler:
@@ -14,26 +14,33 @@ class ErrorHandler:
         if isinstance(error, ignored):
             pass
 
-        if isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven)):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.MissingRequiredArgument)
             )
             return
-
+            """
         if isinstance(error, commands.BadArgument):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.BadArgument)
             )
-            return
-
+            return"""
         if isinstance(error, commands.MissingPermissions):
             await ctx.channel.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
             )
             return
 
+        if isinstance(error, commands.CheckFailure):
+            await ctx.channel.send(
+                embed = await Macro.Embed.error(Messages.MissingPermissions)
+            )
+            return
         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
+    async def on_guild_join(self, guild):
+        self.bot.mods.setup(guild)
 
 def setup(bot):
     bot.add_cog(ErrorHandler(bot))
