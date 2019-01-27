@@ -4,16 +4,19 @@ from discord.ext import commands
 class CachedBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.config = kwargs["config"]
+        self.token = self.config["token"]
+        self.gelbooru_api = self.config["gelbooruAPI"]
+        self.gelbooru_id = self.config["gelbooruID"]
+        # create an instance of a mods() object for moderators
         self.mods = Tools.Mods()
+        # a set of ongoing tasks, like a list
         self.ongoing = set()
 
     async def update_modsquad(self):
         for guild in self.guilds:
             await self.mods.setup(guild)
 
-    async def update_reporting_channel(self, guild_id, channel_id):
-        self.log = self.get_guild(guild_id).get_channel(channel_id)
-
     async def async_init(self):
-        await self.update_reporting_channel()
         await self.update_modsquad()
+        self.log = self.get_guild(self.config["log"][0]).get_channel(self.config["log"][1])

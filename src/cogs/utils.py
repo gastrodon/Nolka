@@ -2,6 +2,7 @@
 Utility commands for a bot named Nolka
 """
 
+from emoji import emojize, demojize
 from libs import Macro, Messages
 from discord.ext import commands
 
@@ -62,6 +63,13 @@ class Utils:
                 helpitems
             )
         )
+
+    @commands.command(pass_context = True)
+    async def test(self, ctx):
+        message = await ctx.send(":thinking:")
+        reaction = await self.bot.wait_for("reaction_add")
+        await ctx.send(reaction[0].emoji)
+        await ctx.send(demojize(reaction[0].emoji))
 
 
 def setup(bot):

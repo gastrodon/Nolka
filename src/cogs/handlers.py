@@ -47,9 +47,11 @@ class ErrorHandler:
                 Messages.traceback.format(
                     ctx.guild,
                     datetime.now(),
+                    ctx.message.content,
                     ctx.command,
                     type(error),
-                    error
+                    error,
+                    "\n".join(traceback.format_exception(type(error), error, error.__traceback__, chain=False))
                 )
             )
         )

@@ -17,12 +17,14 @@ class Cogs:
         "cogs.handlers"
     ]
 
+
 with open(os.path.dirname(os.path.realpath(__file__)) + "/token.json") as stream:
-    token = json.load(stream)["token"]
+    config_file = json.load(stream)
 
 Nolka = botclass.CachedBot(
     command_prefix = "-",
-    description = "A bot named Nolka"
+    description = "A bot named Nolka",
+    config = config_file,
 )
 
 Nolka.remove_command("help")
@@ -41,4 +43,4 @@ async def on_ready():
         name = "on {} servers".format(len(Nolka.guilds)),
     ))
 
-Nolka.run(token)
+Nolka.run(Nolka.token)

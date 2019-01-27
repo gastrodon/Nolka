@@ -12,7 +12,7 @@ MissingPermissions = "You don't have permission to do that"
 UserInputError = "Theres a problem with that command"
 Forbidden = "I'm not allowed to do that"
 CacheReadError = "The cache was not readable, perms need to be reset"
-traceback = "Autoreported from guild {} at {}\nException in command {}\n{} {}"
+traceback = "Autoreported from guild {} at {}\nMessage: {}\nException in command {}\n{} {}\n\n{}"
 
 # Role messages
 rolesMade = "Created the roles {}"
@@ -50,11 +50,7 @@ cogsNotUnloaded = "Failed unloading the cogs {}"
 cogsReloaded = "Reloaded the cogs {}"
 
 # Booru messages
-descSingleImage = "Rating: {}\n[Source]({})"
-descNoSource = "Rating: {}\nNo source provided"
-noPosts = "No images found with the tags {}"
-dumpIndex = "Image {} of {}"
-largeDump = "{} is too many images for me to dump at once"
+booruSearching = "Searching..."
 
 # Utils commands
 pingms = "{:.1f}ms"
