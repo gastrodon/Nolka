@@ -12,36 +12,36 @@ class ErrorHandler:
         ignored = (commands.CommandNotFound, commands.UserInputError)
 
         if isinstance(error, ignored):
-            #return
+            return
             pass
 
         if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven)):
             await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingRequiredArgument)
             )
-            #return
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send(
                 embed = await Macro.Embed.error(Messages.BadArgument)
             )
-            #return
+            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
             )
-            #return
+            return
 
         if isinstance(error, commands.CheckFailure):
             await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
             )
-            #return
+            return
 
         if isinstance(error, discord.errors.Forbidden):
             await ctx.send(
                 embed = await Macro.Embed.error(Messages.Forbidden)
             )
-            #return
+            return
         await self.bot.log.send(
             embed = await Macro.Embed.report(
                 Messages.traceback.format(
