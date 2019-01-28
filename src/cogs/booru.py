@@ -17,6 +17,7 @@ class Booru:
             embed = await Macro.send(Messages.booruSearching)
         )
         response = BooruAPI.PostList(ctx, message, tags = args)
+        await response.edit_message()
 
 def setup(bot):
     bot.add_cog(Booru(bot))

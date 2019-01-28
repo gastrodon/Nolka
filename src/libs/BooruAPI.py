@@ -7,6 +7,8 @@ DOCS : Coming to readthedocs.io soon
 
 import discord, json, os, requests, untangle
 from libs.Tools import BooruNoPosts
+from libs import Macro, Messages
+from emoji import emojize, demojize
 
 class PostList:
     """
@@ -35,13 +37,9 @@ class PostList:
         self.tags = tags
         self.response = requests.get(self.url, params=self.queryStrings)
         self.parsed = untangle.parse(self.response.text)
-        if len(parsed.posts) <= 0:
+        if len(self.parsed.posts) <= 0:
             raise BooruNoPosts
-        self.func_map = {
-            ":arrow_backward:" : self.prev_image(),
-            ":arrow_forward:" : self.next_image()
-        }
-        self.edit_message()
+        self.reacts = ["\U000025c0", "\U000025b6"]
 
     async def image(self):
         return self.parsed.posts.post[self.index]
@@ -57,23 +55,30 @@ class PostList:
     def image_watcher_check(self, reaction, user):
         if user.id != self.ctx.message.author.id or reaction.message.id != self.message.id:
             return False
-        return demojize(reaction.emoji) in func_map.keys()
+        return reaction.emoji in self.reacts
 
     async def image_watcher(self):
         try:
             reaction, user = await self.ctx.bot.wait_for(
                 "reaction_add",
                 check = self.image_watcher_check,
-                timeout = 120
+                timeout = 10
             )
         except:
-            return
+            self.backgroun_task.cancel()
+            await self.message.clear_reactions()
         else:
-            self.func_map[demojize(reaction.emoji)]()
+            if reaction.emoji == "\U000025b6":
+                await self.next_image()
+            if reaction.emoji == "\U000025c0":
+                await self.prev_image()
 
     async def edit_message(self):
-        url = self.parsed.posts.post[self.index]
-        self.message.edit(
+        url = self.parsed.posts.post[self.index]["file_url"]
+        await self.message.edit(
             embed = await Macro.Embed.image(url)
         )
-        self.backgroun_task = self.ctx.bot.loop.create_task(self.image_watcher)
+        await self.message.clear_reactions()
+        for reaction in self.reacts:
+            await self.message.add_reaction(reaction)
+        self.backgroun_task = self.ctx.bot.loop.create_task(self.image_watcher())
