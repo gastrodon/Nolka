@@ -1,16 +1,24 @@
 import os, json, discord, types
 
 class CustomPermissionError(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class NoSubcommand(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class CacheReadError(json.decoder.JSONDecodeError):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class NoRolesGiven(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class BooruNoPosts(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class Mods:
     def __init__(self, cachedir = "__cache"):

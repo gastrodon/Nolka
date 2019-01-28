@@ -1,45 +1,63 @@
 import discord, sys, traceback
 from libs import Macro, Messages, Tools
 from discord.ext import commands
+from datetime import datetime
 
 class ErrorHandler:
     def __init__(self, bot):
         self.bot = bot
-        self.log = bot.get_guild(520793550624129025)
 
     async def on_command_error(self, ctx, error):
         error = getattr(error, 'original', error)
         ignored = (commands.CommandNotFound, commands.UserInputError)
 
         if isinstance(error, ignored):
-            return
+            #return
+            pass
 
         if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven)):
-            await ctx.channel.send(
+            await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingRequiredArgument)
             )
-            return
+            #return
         if isinstance(error, commands.BadArgument):
-            await ctx.channel.send(
+            await ctx.send(
                 embed = await Macro.Embed.error(Messages.BadArgument)
             )
-            return
+            #return
         if isinstance(error, commands.MissingPermissions):
-            await ctx.channel.send(
+            await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
             )
-            return
+            #return
 
         if isinstance(error, commands.CheckFailure):
-            await ctx.channel.send(
+            await ctx.send(
                 embed = await Macro.Embed.error(Messages.MissingPermissions)
             )
-            return
-        print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            #return
+
+        if isinstance(error, discord.errors.Forbidden):
+            await ctx.send(
+                embed = await Macro.Embed.error(Messages.Forbidden)
+            )
+            #return
+        await self.bot.log.send(
+            embed = await Macro.Embed.report(
+                Messages.traceback.format(
+                    ctx.guild,
+                    datetime.now(),
+                    ctx.message.content,
+                    ctx.command,
+                    type(error),
+                    error,
+                    "\n".join(traceback.format_exception(type(error), error, error.__traceback__, chain=False))
+                )
+            )
+        )
 
     async def on_guild_join(self, guild):
-        self.bot.mods.setup(guild)
+        await self.bot.mods.setup(guild)
 
 def setup(bot):
     bot.add_cog(ErrorHandler(bot))

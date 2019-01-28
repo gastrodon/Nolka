@@ -17,12 +17,14 @@ class Cogs:
         "cogs.handlers"
     ]
 
+
 with open(os.path.dirname(os.path.realpath(__file__)) + "/token.json") as stream:
-    token = json.load(stream)["token"]
+    config_file = json.load(stream)
 
 Nolka = botclass.CachedBot(
     command_prefix = "-",
-    description = "A bot named Nolka"
+    description = "A bot named Nolka",
+    config = config_file,
 )
 
 Nolka.remove_command("help")
@@ -36,9 +38,9 @@ async def on_ready():
     """
     Change the presence of Nolka when it is ready.
     """
-    await Nolka.update_modsquad()
+    await Nolka.async_init()
     await Nolka.change_presence(activity = discord.Game(
         name = "on {} servers".format(len(Nolka.guilds)),
     ))
 
-Nolka.run(token)
+Nolka.run(Nolka.token)

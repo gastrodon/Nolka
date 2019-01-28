@@ -2,6 +2,7 @@
 Utility commands for a bot named Nolka
 """
 
+from emoji import emojize, demojize
 from libs import Macro, Messages
 from discord.ext import commands
 

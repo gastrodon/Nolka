@@ -41,6 +41,15 @@ class Embed:
         return await cls.message(description, color = discord.Color(0xffee75))
 
     @classmethod
+    async def report(cls, description, **kwargs):
+        """
+        Macro for error reporting to my _special guild_
+
+        description: string - message text
+        """
+        return await cls.message(description, color = discord.Color(0xbfbfbf))
+
+    @classmethod
     async def image(cls, url, description = None, **kwargs):
         """
         Macro for images for Nolka to send
