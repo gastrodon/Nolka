@@ -17,7 +17,10 @@ class Booru:
             embed = await Macro.send(Messages.booruSearching)
         )
         response = BooruAPI.PostList(ctx, message, tags = args)
-        await response.edit_message()
+        try:
+            await response.edit_message()
+        except:
+            await response.no_posts()
 
 def setup(bot):
     bot.add_cog(Booru(bot))

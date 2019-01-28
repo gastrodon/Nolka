@@ -37,8 +37,7 @@ class PostList:
         self.tags = tags
         self.response = requests.get(self.url, params=self.queryStrings)
         self.parsed = untangle.parse(self.response.text)
-        if len(self.parsed.posts) <= 0:
-            raise BooruNoPosts
+
         self.reacts = ["\U000025c0", "\U000025b6"]
 
     async def image(self):
@@ -74,6 +73,8 @@ class PostList:
                 await self.prev_image()
 
     async def edit_message(self):
+        if len(self.parsed.posts) <= 0:
+            raise BooruNoPosts
         url = self.parsed.posts.post[self.index]["file_url"]
         await self.message.edit(
             embed = await Macro.Embed.image(url)
@@ -82,3 +83,8 @@ class PostList:
         for reaction in self.reacts:
             await self.message.add_reaction(reaction)
         self.backgroun_task = self.ctx.bot.loop.create_task(self.image_watcher())
+
+    async def no_posts(self):
+        await self.message.edit(
+            embed = await Macro.send(Messages.BooruNoPosts)
+        )

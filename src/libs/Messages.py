@@ -51,6 +51,7 @@ cogsReloaded = "Reloaded the cogs {}"
 
 # Booru messages
 booruSearching = "Searching..."
+BooruNoPosts = "No posts found for those tags"
 
 # Utils commands
 pingms = "{:.1f}ms"
