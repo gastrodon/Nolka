@@ -4,7 +4,6 @@ Booru query for a bot named Nolka
 
 from libs import Macro, BooruAPI, Messages
 from libs.Tools import BooruNoPosts
-from emoji import demojize, emojize
 from discord.ext import commands
 
 class Booru:

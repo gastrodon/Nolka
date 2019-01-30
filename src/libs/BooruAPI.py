@@ -8,7 +8,6 @@ DOCS : Coming to readthedocs.io soon
 import discord, json, os, requests, untangle
 from libs.Tools import BooruNoPosts
 from libs import Macro, Messages
-from emoji import emojize, demojize
 
 class PostList:
     """
