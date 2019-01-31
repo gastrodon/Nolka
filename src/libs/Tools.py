@@ -20,6 +20,10 @@ class BooruNoPosts(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+class NoReactMethod(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 class Mods:
     def __init__(self, cachedir = "__cache"):
         self.cachedir = os.path.dirname(os.path.realpath(__file__)) + "/{}/".format(cachedir)

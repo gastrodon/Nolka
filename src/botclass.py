@@ -19,4 +19,4 @@ class CachedBot(commands.Bot):
 
     async def async_init(self):
         await self.update_modsquad()
-        self.log = self.get_guild(self.config["log"][0]).get_channel(self.config["log"][1])
+        self.log = self.get_channel(self.config["log"][1])

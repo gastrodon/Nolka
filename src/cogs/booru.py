@@ -11,15 +11,12 @@ class Booru:
         self.bot = bot
 
     @commands.command(pass_context = True)
-    async def booru(self, ctx, *args):
+    async def gel(self, ctx, *args):
         message = await ctx.send(
             embed = await Macro.send(Messages.booruSearching)
         )
-        response = BooruAPI.PostList(ctx, message, tags = args)
-        try:
-            await response.edit_message()
-        except:
-            await response.no_posts()
+        response = BooruAPI.Gel(ctx, message, tags = args)
+        await response.start()
 
 def setup(bot):
     bot.add_cog(Booru(bot))
