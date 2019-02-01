@@ -1,89 +1,97 @@
-"""
-Booru module for a Discord bot named Nolka.
-
-Author : Zero <dakoolstwunn@gmail.com>
-DOCS : Coming to readthedocs.io soon
-"""
-
-import discord, json, os, requests, untangle
+import untangle, requests
+from libs import Macro, Paginate
 from libs.Tools import BooruNoPosts
-from libs import Macro, Messages
+from discord import Embed
 
-class PostList:
+class Booru:
     """
-    Gelbooru post response object.
+    Superclass for *booru response objects
     """
-    def __init__(self, ctx, message, page = 1, tags = []):
-        """
-        Get a page of posts from gelbooru and store it in this object.
-
-        ctx: discord.Context - context from the command
-        page: int - page to start searching at
-        """
+    def __init__(self, ctx, message, tags):
+        self.paginator = Paginate.Paginated(
+            ctx = ctx,
+            message = message,
+            member = ctx.author,
+            #{point-left, point-right, information-symbol}
+            react_map = {
+                "\U000025c0": self.prev_image,
+                "\U000025b6": self.next_image,
+                "\U00002139": self.toggle_info,
+                "\U000023f9": self.stop
+            },
+            on_start = self.edit_message,
+            on_error = self.handle
+        )
         self.ctx = ctx
         self.message = message
-        self.url = "https://gelbooru.com/index.php"
-        self.queryStrings = {
-            "page": "dapi",
-            "pid" : page,
-            "q" : "index",
-            "s" : "post",
-            "api_key" : ctx.bot.gelbooru_api,
-            "user_id" : ctx.bot.gelbooru_id,
-            "tags" : " ".join(tags)
-        }
+        self.info = False
         self.index = 0
         self.tags = tags
-        self.response = requests.get(self.url, params=self.queryStrings)
-        self.parsed = untangle.parse(self.response.text)
-
-        self.reacts = ["\U000025c0", "\U000025b6"]
-
-    async def image(self):
-        return self.parsed.posts.post[self.index]
-
-    async def next_image(self):
-        self.index += 1
-        await self.edit_message()
+        self.parsed = None
+        self.total = 0
 
     async def prev_image(self):
-        self.index -= 1
-        await self.edit_message()
+        self.index = (self.index - 1 + self.total) % self.total
 
-    def image_watcher_check(self, reaction, user):
-        if user.id != self.ctx.message.author.id or reaction.message.id != self.message.id:
-            return False
-        return reaction.emoji in self.reacts
+    async def next_image(self):
+        self.index = (self.index + 1 + self.total) % self.total
 
-    async def image_watcher(self):
-        try:
-            reaction, user = await self.ctx.bot.wait_for(
-                "reaction_add",
-                check = self.image_watcher_check,
-                timeout = 10
-            )
-        except:
-            self.backgroun_task.cancel()
-            await self.message.clear_reactions()
-        else:
-            if reaction.emoji == "\U000025b6":
-                await self.next_image()
-            if reaction.emoji == "\U000025c0":
-                await self.prev_image()
+    async def toggle_info(self):
+        self.info = not self.info
 
-    async def edit_message(self):
-        if len(self.parsed.posts) <= 0:
-            raise BooruNoPosts
-        url = self.parsed.posts.post[self.index]["file_url"]
-        await self.message.edit(
-            embed = await Macro.Embed.image(url)
-        )
-        await self.message.clear_reactions()
-        for reaction in self.reacts:
-            await self.message.add_reaction(reaction)
-        self.backgroun_task = self.ctx.bot.loop.create_task(self.image_watcher())
+    async def handle(self, error):
+        if isinstance(error, AttributeError):
+            return await self.no_posts()
+        raise error
 
     async def no_posts(self):
         await self.message.edit(
-            embed = await Macro.send(Messages.BooruNoPosts)
+            embed = await Macro.send("No posts were found")
+        )
+
+    async def start(self):
+        await self.paginator.start()
+
+    async def stop(self):
+        await self.paginator.close()
+
+    async def edit_message(self):
+        pass
+
+class Gel(Booru):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.url = "https://gelbooru.com/index.php"
+        self.queryStrings = {
+            "page": "dapi",
+            "pid" : "page",
+            "q" : "index",
+            "s" : "post",
+            "api_key" : self.ctx.bot.gelbooru_api,
+            "user_id" : self.ctx.bot.gelbooru_id,
+            "tags" : " ".join(self.tags)
+        }
+        self.parsed = untangle.parse(requests.get(self.url, params = self.queryStrings).text)
+        self.total = len(self.parsed.posts)
+
+    async def edit_message(self):
+        try:
+            post = self.parsed.posts.post[self.index]
+            rating = post["rating"].upper() if post["rating"] else "?"
+        except TypeError:
+            post = self.parsed.posts.post
+            rating = post["rating"].upper() if post["rating"] else "?"
+        if self.info:
+            tags = [tag.replace("_", "\_") for tag in post["tags"].strip().split(" ")]
+            embed = await Macro.send("\n".join(tags))
+            embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+            return await self.message.edit(
+                embed = embed
+            )
+
+        url = post["file_url"]
+        embed = await Macro.Embed.image(url)
+        embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+        return await self.message.edit(
+            embed = embed
         )

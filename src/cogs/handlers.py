@@ -1,5 +1,5 @@
 import discord, sys, traceback
-from libs import Macro, Messages, Tools
+from libs import Macro, Tools
 from discord.ext import commands
 from datetime import datetime
 
@@ -15,36 +15,33 @@ class ErrorHandler:
             return
             pass
 
-        if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven)):
-            await ctx.send(
-                embed = await Macro.Embed.error(Messages.MissingRequiredArgument)
+        if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven, Tools.CustomPermissionError)):
+            return await ctx.send(
+                embed = await Macro.Embed.error("I'm missing some arguments")
             )
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send(
-                embed = await Macro.Embed.error(Messages.BadArgument)
+        if isinstance(error, (commands.BadArgument, commands.UserInputError)):
+            return await ctx.send(
+                embed = await Macro.Embed.error("Those arguments don't work")
             )
-            return
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send(
-                embed = await Macro.Embed.error(Messages.MissingPermissions)
+            missing_perms = ", ".join(error.missing_perms)
+            return await ctx.send(
+                embed = await Macro.Embed.error(f"You don't have the `{missing_perms}` permission")
             )
-            return
 
         if isinstance(error, commands.CheckFailure):
-            await ctx.send(
-                embed = await Macro.Embed.error(Messages.MissingPermissions)
+            # I don't remember when this would be called
+            return await ctx.send(
+                embed = await Macro.Embed.error("You can't do that")
             )
-            return
 
         if isinstance(error, discord.errors.Forbidden):
-            await ctx.send(
-                embed = await Macro.Embed.error(Messages.Forbidden)
+            return await ctx.send(
+                embed = await Macro.Embed.error("I'm not allowed to do that")
             )
-            return
         await self.bot.log.send(
             embed = await Macro.Embed.report(
-                Messages.traceback.format(
+                "Autoreported from guild {} at {}\nMessage: {}\nException in command {}\n{} {}\n\n{}".format(
                     ctx.guild,
                     datetime.now(),
                     ctx.message.content,

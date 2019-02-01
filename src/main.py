@@ -12,7 +12,6 @@ class Cogs:
     safe = [
         "cogs.admin",
         "cogs.booru",
-        "cogs.update",
         "cogs.utils",
         "cogs.handlers"
     ]
