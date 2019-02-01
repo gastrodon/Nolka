@@ -5,15 +5,6 @@ Author : Zero <dakoolstwunn@gmail.com>
 DOCS : Coming to readthedocs.io soon
 """
 
-# Error messages
-MissingRequiredArgument = "I'm missing some arguments"
-BadArgument = "Those arguments don't work"
-MissingPermissions = "You don't have permission to do that"
-UserInputError = "Theres a problem with that command"
-Forbidden = "I'm not allowed to do that"
-CacheReadError = "The cache was not readable, perms need to be reset"
-traceback = "Autoreported from guild {} at {}\nMessage: {}\nException in command {}\n{} {}\n\n{}"
-
 # Role messages
 rolesMade = "Created the roles {}"
 rolesGiven = "Gave the users {} the roles {}"

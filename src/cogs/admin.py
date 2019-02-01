@@ -2,18 +2,12 @@
 Server management for a bot named Nolka
 """
 
-import discord, typing, re
+import discord, typing
 from libs import Macro, Messages, Tools
 from discord.ext import commands
 from asyncio import sleep
 
 class Workers:
-    @staticmethod
-    def modcheck():
-        def wrapped(ctx):
-            return ctx.bot.mods.check(ctx)
-        return commands.check(wrapped)
-
     @staticmethod
     async def _notify(ctx, user, type, reason):
         try:
@@ -71,34 +65,35 @@ class Workers:
 class Commands:
     def __init__(self, bot):
         self.bot = bot
-        self.modcheck = self.bot.mods.check
         self.time_factors = {1, 60, 24}
         self.time_factors = {
             "d" : 86400,
             "h" : 3600,
             "m" : 60,
-            "s" : 1
+            "s" : 1,
         }
 
-    modcheck = Workers.modcheck
 
-    @commands.group(pass_context = True)
-    @modcheck()
+    @commands.group(pass_context = True, aliases = ["roles"])
     async def role(self, ctx):
-        """
-        Group for manipulating guild roles.
-        """
         # TODO have this list user roles
         if ctx.invoked_subcommand is None:
-            pass
+            if len(ctx.author.roles[1:]):
+                roles = list(map(str, ctx.author.roles[1:]))
+                return await ctx.send(
+                    embed = await Macro.send(f"You have the roles {', '.join(roles)}")
+                )
+            return await ctx.send(
+                embed = await Macro.send("You have no special roles")
+            )
 
-    @role.command(pass_context = True, aliases = ["give", "new", "create"])
+    @role.command(pass_context = True, name = "give", aliases = ["new", "create"])
+    @commands.has_permissions(manage_roles = True)
     async def role_give(self, ctx, *args : typing.Union[discord.Role, discord.Member, str]):
         """
         Used to create roles and assign roles.
-        If new roles are passed in, they will be created.
-        If new or existing roles and guild members are passed in, they will be created if applicable and assigned
-        Takes a mixture of roles and guild members. Requires at least one new role, or one role and a guild member.
+        If new roles are passed in, they will be created. If new or existing roles and guild members are passed in, they will be created if applicable and assigned
+        `-role give [roles] [users]`
         """
         users = list(filter(lambda x : isinstance(x, discord.Member), args))
         roles = list(filter(lambda x : isinstance(x, discord.Role), args))
@@ -124,11 +119,12 @@ class Commands:
             ))
         )
 
-    @role.command(pass_context = True, aliases = ["take", "remove"])
+    @role.command(pass_context = True, name = "take", aliases = ["remove"])
+    @commands.has_permissions(manage_roles = True)
     async def role_take(self, ctx, *args: typing.Union[discord.Role, discord.Member]):
         """
         Removes roles from guild members.
-        Takes a mixture of roles and guild members. Requires at least one of each.
+        `-role take <roles> <users>`
         """
         roles = list(filter(lambda x : isinstance(x, discord.Role), args))
         members = list(filter(lambda x : isinstance(x, discord.Member), args))
@@ -142,11 +138,12 @@ class Commands:
             ))
         )
 
-    @role.command(pass_context = True, aliases = ["delete", "kill"])
+    @role.command(pass_context = True, name = "kill", aliases = ["delete"])
+    @commands.has_permissions(manage_roles = True)
     async def role_kill(self, ctx, *roles: typing.Union[discord.Role]):
         """
         Delete roles from the guild.
-        Takes a list of roles. Requires at least one.
+        `-role kill <roles>`
         """
         if len(roles) is 0:
             raise discord.MissingRequiredArgument(discord.Role)
@@ -159,29 +156,37 @@ class Commands:
         )
 
     @commands.command(pass_context = True, aliases = ["hammer"])
-    @modcheck()
-    async def ban(self, ctx, user: discord.Member, *, reason = Messages.noReason):
+    @commands.has_permissions(ban_members = True)
+    async def ban(self, ctx, user: discord.Member, *, reason = "No reason given"):
+        """
+        Bannes a user from a guild. Keep in mind that banned users cannot rejoin normally unless unbanned.
+        `-ban <user> [reason]`
+        """
         await Workers._notify(ctx, user, "banned", reason)
         await ctx.guild.ban(user, reason = reason)
-        await ctx.send(
-            embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))
+        return await ctx.send(
+            embed = await Macro.Embed.infraction(f"goodbye, {user.name}")
         )
 
     @commands.command(pass_context = True)
-    @modcheck()
-    async def kick(self, ctx, user: discord.Member, *, reason = Messages.noReason):
+    @commands.has_permissions(kick_members = True)
+    async def kick(self, ctx, user: discord.Member, *, reason = "No reason given"):
+        """
+        Kickes a user from a guild. Keep in mind that kicked users can rejoin normally.
+        `-kick <user> [reason]`
+        """
         await Workers._notify(ctx, user, "kicked", reason)
         await ctx.guild.kick(user, reason = reason)
-        await ctx.send(
-            embed = await Macro.Embed.infraction(Messages.goodbye.format(user.name))
+        return await ctx.send(
+            embed = await Macro.Embed.infraction(f"goodbye, {user.name}")
         )
 
     @commands.command(pass_context = True)
-    @modcheck()
-    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration, *, reason = Messages.noReason):
+    @commands.has_permissions(manage_channels = True)
+    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration, *, reason = "No reason given"):
         """
         Mute a user for a set duration
-        Accepts a guild member and a time duration in the format
+        `-tempmute <user> <number of d|h|m|s|> [reason]`
         """
         try:
             self.bot.loop.create_task(Workers.mute_timer(ctx, user, int(duration), reason))
@@ -192,38 +197,6 @@ class Commands:
             self.bot.loop.create_task(Workers.mute_timer(ctx, user, duration, reason))
         except:
             raise commands.BadArgument
-
-    @commands.group(pass_context = True, aliases = ["modsquad", "squad"])
-    @modcheck()
-    async def mod(self, ctx):
-        """
-        Group for managing the ModSquad
-        """
-        if ctx.invoked_subcommand is None:
-            pass
-
-    @mod.command(pass_context = True, aliases = ["add"])
-    async def mod_add(self, ctx, user: typing.Union[discord.Member]):
-        """
-        Add a user to the ModSquad
-        Accepts and requires a guild member
-        """
-        await self.bot.mods.add(ctx, user)
-        await ctx.send(
-            embed = await Macro.send(Messages.modCreate.format(user.mention))
-        )
-
-    @mod.command(pass_context = True, aliases = ["remove"])
-    async def mod_remove(self, ctx, user: typing.Union[discord.Member]):
-        """
-        Remove a user from the ModSquad
-        Accepts and requires a guild member
-        """
-        await self.bot.mods.remove(ctx, user)
-        await ctx.send(
-            embed = await Macro.send(Messages.modRemove.format(user.mention))
-        )
-
 
 def setup(bot):
     bot.add_cog(Commands(bot))

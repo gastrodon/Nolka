@@ -1,6 +1,7 @@
-import discord, untangle, requests
+import untangle, requests
 from libs import Macro, Paginate
 from libs.Tools import BooruNoPosts
+from discord import Embed
 
 class Booru:
     """
@@ -41,13 +42,11 @@ class Booru:
     async def handle(self, error):
         if isinstance(error, AttributeError):
             return await self.no_posts()
-        await self.message.edit(
-            embed = await Macro.send("There was an Error")
-        )
+        raise error
 
     async def no_posts(self):
         await self.message.edit(
-            embed = await Macro.send("There was an error")
+            embed = await Macro.send("No posts were found")
         )
 
     async def start(self):
@@ -74,26 +73,25 @@ class Gel(Booru):
         }
         self.parsed = untangle.parse(requests.get(self.url, params = self.queryStrings).text)
         self.total = len(self.parsed.posts)
-        if self.total <= 0:
-            self.paginator.close()
 
     async def edit_message(self):
+        try:
+            post = self.parsed.posts.post[self.index]
+            rating = post["rating"].upper() if post["rating"] else "?"
+        except TypeError:
+            post = self.parsed.posts.post
+            rating = post["rating"].upper() if post["rating"] else "?"
         if self.info:
-            tags = self.parsed.posts.post[self.index]["tags"].strip().split(" ")
-            await self.message.edit(
-                embed = await Macro.send(
-                    "{} of {}\n{}".format(
-                        self.index + 1,
-                        self.total,
-                        "\n".join(tags)
-                    )
-                )
+            tags = [tag.replace("_", "\_") for tag in post["tags"].strip().split(" ")]
+            embed = await Macro.send("\n".join(tags))
+            embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+            return await self.message.edit(
+                embed = embed
             )
-            return
-        url = self.parsed.posts.post[self.index]["file_url"]
-        await self.message.edit(
-            embed = await Macro.Embed.image(
-                url,
-                description = "{} of {}".format(self.index + 1, self.total)
-            )
+
+        url = post["file_url"]
+        embed = await Macro.Embed.image(url)
+        embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+        return await self.message.edit(
+            embed = embed
         )

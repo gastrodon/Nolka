@@ -81,10 +81,15 @@ class Paginated:
         except Exception as error:
             if self.on_error:
                 await self.on_error(error)
+            else:
+                raise error
             await self.close()
 
     async def close(self):
-        await self.message.clear_reactions()
+        try:
+            await self.message.clear_reactions()
+        except:
+            pass
         if self.backgrond_task:
             self.backgrond_task.cancel()
         if self.on_close:

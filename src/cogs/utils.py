@@ -1,66 +1,128 @@
-"""
-Utility commands for a bot named Nolka
-"""
-
-from libs import Macro, Messages
+from libs import Macro, Paginate
+from discord import Permissions
 from discord.ext import commands
+from discord.utils import oauth_url
+from libs.Tools import CustomPermissionError
+
+class Helper:
+    def __init__(self, ctx, message):
+        self.paginator = Paginate.Paginated(
+            ctx = ctx,
+            message = message,
+            member = ctx.author,
+            react_map = {
+                "\U000025c0": self.prev,
+                "\U000025b6": self.next,
+                "\U000023f9": self.stop
+            },
+            on_start = self.edit_message
+        )
+
+        self.ctx = ctx
+        self.message = message
+        self.size = 3
+        self.index = 0
+        self.help_items = self.generate_help()
+        self.total = -(-len(self.help_items) // self.size)
+
+    def generate_help(self):
+        help_items = {}
+        for command in self.ctx.bot.commands:
+            if isinstance(command, commands.Group):
+                for sub_com in command.commands:
+                    docstring = sub_com.help if sub_com.help else "No docstring"
+                    help_items[command.name + " " + sub_com.name] = docstring
+
+            else:
+                docstring = command.help if command.help else "No docstring"
+                help_items[command.name] = docstring
+        return help_items
+
+    async def build_message(self):
+        start = self.index * self.size
+        end = min(start + self.size, len(self.help_items.keys()))
+        help_format = "__{}__\n {}\n"
+        final = await Macro.send("Help")
+        final.title = f"{self.index + 1} of {self.total} pages | {len(self.help_items.keys())} total commands"
+        for item in list(self.help_items.keys())[start:end]:
+            if isinstance(item, dict):
+                for subitem in list(item.keys()):
+                    final.add_field(
+                        name = f"{subitem}", value = item[subitem], inline = False
+                    )
+            final.add_field(
+                name = f"{item}", value = self.help_items[item], inline = False
+            )
+        return final
+
+        #for item in list()
+
+    async def start(self):
+        await self.paginator.start()
+
+    async def prev(self):
+        self.index = (self.index - 1 + self.total) % self.total
+
+    async def next(self):
+        self.index = (self.index + 1 + self.total) % self.total
+
+    async def stop(self):
+        await self.message.delete()
+        await self.paginator.close()
+
+    async def edit_message(self):
+        await self.message.edit(
+            embed = await self.build_message()
+        )
 
 class Utils:
     def __init__(self, bot):
         self.bot = bot
 
-
-    @staticmethod
-    def _unpackSubcommands(*botCommands):
-        """
-        Recursively unpack a group of commands
-        """
-        for command in botCommands:
-            yield ["`{}`".format(command.name), command.help] if command.help else ["`{}`".format(command.name), Messages.noDocstring]
-            if isinstance(command, commands.Group):
-                for sub in command.commands:
-                    yield ["`{}: {}`".format(command.name, sub.name), sub.help] if sub.help else ["`{}: {}`".format(command.name, sub.name), Messages.noDocstring]
-
-    @staticmethod
-    def _renderHelp(group):
-        message = Messages.helpTemplate
-        for item in group:
-            if isinstance(item, commands.Group):
-                message.append(_unpackSubcommands(item))
-
     @commands.command(pass_context = True)
-    async def ping(self, ctx, count = 1):
-        """
-        Return the bot's latency
-        """
-        latency = self.bot.latency * 1000
-        try:
-            int(count)
-        except ValueError:
-            count = 1
-        for _ in range(int(count)):
-            await ctx.channel.send(
-                embed = await Macro.send(
-                    Messages.pingms.format(latency)
-                )
-            )
-
-    @commands.command(pass_context = True)
-    async def help(self, ctx, *args):
+    async def help(self, ctx):
         """
         Ask Nolka for help
+        `-help`
         """
-        # TODO: List them 5 at a time and use reacts to scroll through them
-        if len(args) is 0:
-            helpitems = []
-            messageDesc = Messages.helpTemplate
-            for command in self._unpackSubcommands(*self.bot.commands):
-                helpitems.append(command)
+        message = await ctx.send(
+            embed = await Macro.send("Getting help")
+        )
+
+        helper = Helper(ctx, message)
+        await helper.start()
+
+    @commands.command(pass_context = True)
+    async def invite(self, ctx, *args):
+        """
+        Return an OAuth link to add this bot to a server
+        `-invite`
+        """
         await ctx.channel.send(
-            embed = await Macro.Embed.help(
-                messageDesc,
-                helpitems
+            embed = await Macro.send("Add me to your server [here]({})".format(
+                oauth_url(self.bot.user.id, permissions = Permissions(permissions = 268443702))
+            ))
+        )
+
+    @commands.command(pass_context = True)
+    async def report(self, ctx, *, report = None):
+        """
+        Report something to the bot owner `Zero#5200` so it appears in my channel
+        `-report <something that happened with the bot ~~or your day~~>`
+        """
+        if not report:
+            raise CustomPermissionError
+        try:
+            await ctx.bot.log.send(
+                embed = await Macro.Embed.infraction(f"{ctx.author.name} from {ctx.guild} said this:\n{report}")
             )
+        except Exception as error:
+            await ctx.send(
+                embed = await Macro.send("The report was not sent")
+            )
+            raise error
+        await ctx.send(
+            embed = await Macro.send("The report has been sent")
         )
 
 
