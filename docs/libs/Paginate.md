@@ -17,7 +17,7 @@ The `Paginated` class requires a few arguments
 
  - `message: discord.Message` This is the message that will paginate. This should be a message that your bot has authored.
 
- - `member: discord.User | set/list/tuple | int` This is the user that is allowed to paginate the message.
+ - `member: discord.User | set/list/tuple` This is the user that is allowed to paginate the message.
 
  - `react_map: dict{string: coroutine}` This is an association map between unicode strings representing reaction emojis and coroutines. String keys in this map will be added by the bot as reactions for ease of clicking. When a reaction is added by a member part of the `member` argument that matches a react in this map, the associated function is fired and the reaction is reset.
 
