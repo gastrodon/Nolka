@@ -9,7 +9,7 @@ class Booru:
     """
     def __init__(self, ctx, message, tags):
         self.paginator = Paginate.Paginated(
-            ctx = ctx,
+            bot = ctx.bot,
             message = message,
             member = ctx.author,
             #{point-left, point-right, information-symbol}
@@ -32,12 +32,15 @@ class Booru:
 
     async def prev_image(self):
         self.index = (self.index - 1 + self.total) % self.total
+        await self.edit_message()
 
     async def next_image(self):
         self.index = (self.index + 1 + self.total) % self.total
+        await self.edit_message()
 
     async def toggle_info(self):
         self.info = not self.info
+        await self.edit_message()
 
     async def handle(self, error):
         if isinstance(error, AttributeError):
