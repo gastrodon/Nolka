@@ -129,8 +129,12 @@ class Utils:
             embed = await Macro.send("The report has been sent")
         )
 
-    @commands.command(pass_context = True, aliases = ["random"])
-    async def rand(self, ctx, *args):
+    @commands.command(pass_context = True, aliases = ["rand"])
+    async def random(self, ctx, *args):
+        """
+        Get a random number. Default is 0 to 10. One argument: 0 to argument. Two arguments: argument 1 to argument 2
+        `-random [number] [number]`
+        """
         try:
             args = tuple(map(int, args))
         except:
