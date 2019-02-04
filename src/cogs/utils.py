@@ -7,7 +7,7 @@ from libs.Tools import CustomPermissionError
 class Helper:
     def __init__(self, ctx, message):
         self.paginator = Paginate.Paginated(
-            ctx = ctx,
+            bot = ctx.bot,
             message = message,
             member = ctx.author,
             react_map = {
@@ -62,11 +62,14 @@ class Helper:
 
     async def prev(self):
         self.index = (self.index - 1 + self.total) % self.total
+        await self.edit_message()
 
     async def next(self):
         self.index = (self.index + 1 + self.total) % self.total
+        await self.edit_message()
 
     async def stop(self):
+        await self.ctx.message.delete()
         await self.message.delete()
         await self.paginator.close()
 
