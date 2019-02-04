@@ -69,6 +69,7 @@ class Helper:
         await self.edit_message()
 
     async def stop(self):
+        await self.ctx.message.delete()
         await self.message.delete()
         await self.paginator.close()
 

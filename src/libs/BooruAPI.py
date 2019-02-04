@@ -1,7 +1,10 @@
-import untangle, requests
+import untangle, json, requests
 from libs import Macro, Paginate
-from libs.Tools import BooruNoPosts
 from discord import Embed
+
+class BooruNoPosts(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class Booru:
     """
@@ -12,23 +15,25 @@ class Booru:
             bot = ctx.bot,
             message = message,
             member = ctx.author,
-            #{point-left, point-right, information-symbol}
+            # point-left, point-right, information-symbol
             react_map = {
                 "\U000025c0": self.prev_image,
                 "\U000025b6": self.next_image,
                 "\U00002139": self.toggle_info,
-                "\U000023f9": self.stop
+                "\U000023f9": self.stop,
+                "\U0000274c": self.delete
             },
             on_start = self.edit_message,
             on_error = self.handle
         )
         self.ctx = ctx
         self.message = message
-        self.info = False
-        self.index = 0
         self.tags = tags
-        self.parsed = None
+        self.index = 0
         self.total = 0
+        self.page = 1
+        self.parsed = None
+        self.info = False
 
     async def prev_image(self):
         self.index = (self.index - 1 + self.total) % self.total
@@ -61,6 +66,12 @@ class Booru:
     async def edit_message(self):
         pass
 
+    async def delete(self):
+        await self.message.delete()
+        await self.ctx.message.delete()
+        await self.stop()
+
+
 class Gel(Booru):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,14 +79,32 @@ class Gel(Booru):
         self.queryStrings = {
             "page": "dapi",
             "pid" : "page",
-            "q" : "index",
-            "s" : "post",
+            "q"   : "index",
+            "s"   : "post",
             "api_key" : self.ctx.bot.gelbooru_api,
             "user_id" : self.ctx.bot.gelbooru_id,
-            "tags" : " ".join(self.tags)
+            "tags" : " ".join(self.tags),
+            "pid" : self.page
         }
-        self.parsed = untangle.parse(requests.get(self.url, params = self.queryStrings).text)
+        self.response = requests.get(self.url, params = self.queryStrings)
+        self.parsed = untangle.parse(self.response.text)
         self.total = len(self.parsed.posts)
+        self.page_count = -(-int(self.parsed.posts["count"]) // self.total)
+
+    async def prev_image(self):
+        self.index = (self.index - 1 + self.total) % self.total
+        await self.edit_message()
+
+    async def next_image(self):
+        self.index += 1
+        if self.index >= self.total:
+            self.index = 0
+            self.page = (self.page + 1 + self.page_count) % self.page_count
+            self.queryStrings["pid"] = self.page
+            self.response = requests.get(self.url, params = self.queryStrings)
+            self.parsed = untangle.parse(self.response.text)
+            self.total = len(self.parsed.posts)
+        await self.edit_message()
 
     async def edit_message(self):
         try:
@@ -87,14 +116,76 @@ class Gel(Booru):
         if self.info:
             tags = [tag.replace("_", "\_") for tag in post["tags"].strip().split(" ")]
             embed = await Macro.send("\n".join(tags))
-            embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
             return await self.message.edit(
                 embed = embed
             )
 
         url = post["file_url"]
+        source = f"[Source]({post['source'].split(' ')[0]})" if post["source"] else "No source"
         embed = await Macro.Embed.image(url)
-        embed.title = f"{self.index + 1} of {self.total} results | Rating: {rating}"
+        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+        embed.description = source
+        return await self.message.edit(
+            embed = embed
+        )
+
+class Derpi(Booru):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.url = "https://derpibooru.org/search.json"
+        self.queryStrings = {
+            "q" : ",".join([a.replace("_", " ") for a in self.tags]),
+            "page" : self.page
+        }
+        self.response = requests.get(self.url, params = self.queryStrings)
+        self.parsed = json.loads(self.response.text)
+        self.total = len(self.parsed["search"])
+        self.page_count = -(-self.parsed["total"] // self.total)
+
+    async def prev_image(self):
+        self.index -= 1
+        if self.index < 0:
+            self.page = (self.page - 1 + self.page_count) % self.page_count
+            if self.page is 0:
+                self.page = self.page_count
+            self.queryStrings["page"] = self.page
+            self.response = requests.get(self.url, params = self.queryStrings)
+            self.parsed = json.loads(self.response.text)
+            self.total = len(self.parsed["search"])
+            self.index = self.total - 1
+        await self.edit_message()
+
+
+    async def next_image(self):
+        self.index += 1
+        if self.index >= self.total:
+            self.index = 0
+            self.page = (self.page + 1 + self.page_count) % self.page_count
+            self.queryStrings["page"] = self.page
+            self.response = requests.get(self.url, params = self.queryStrings)
+            self.parsed = json.loads(self.response.text)
+            self.total = len(self.parsed["search"])
+        await self.edit_message()
+
+    async def edit_message(self):
+        post = self.parsed["search"][self.index]
+        tags = [t.strip() for t in post["tags"].split(",")]
+        try:
+            rating = list(filter(lambda x: x in ["explicit", "questionable", "safe"], tags))[0][0].upper()
+        except IndexError:
+            rating = "?"
+        if self.info:
+            embed = await Macro.send("\n".join(tags))
+            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+            return await self.message.edit(
+                embed = embed
+            )
+        url = f"https:{post['image']}"
+        source = f"[Source]({post['source_url'].split(' ')[0]})" if post["source_url"] else "No source"
+        embed = await Macro.Embed.image(url)
+        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+        embed.description = source
         return await self.message.edit(
             embed = embed
         )

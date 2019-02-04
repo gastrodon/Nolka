@@ -14,7 +14,8 @@ class Paginated:
         timeout   = 60,
         on_start  = None,
         on_close  = None,
-        on_error  = None
+        on_error  = None,
+        on_update = None
     ):
         """
         Pagination class
@@ -62,6 +63,7 @@ class Paginated:
         self.on_start = on_start
         self.on_close = on_close
         self.on_error = on_error
+        self.on_update = on_update
         self.react_map = react_map
 
     def check(self, reaction, user):
@@ -113,3 +115,13 @@ class Paginated:
             self.backgroud_task.cancel()
         if self.on_close:
             await self.on_close()
+
+    async def update_react_map(self, react_map):
+        if react_map == self.react_map:
+            return
+        if self.on_update:
+            await self.on_update()
+        self.backgroud_task.cancel()
+        await self.message.clear_reactions()
+        self.react_map = react_map
+        await self.start()

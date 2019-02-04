@@ -21,15 +21,15 @@ The `Paginated` class requires a few arguments
 
  - `react_map: dict{string: coroutine}` This is an association map between unicode strings representing reaction emojis and coroutines. String keys in this map will be added by the bot as reactions for ease of clicking. When a reaction is added by a member part of the `member` argument that matches a react in this map, the associated function is fired and the reaction is reset.
 
- The `Paginated` class also has a few optional keyword arguments.
+The `Paginated` class also has a few optional keyword arguments.
 
-  - `timeout: int/float` Time to listen for a reaction. If nothing is supplied, this defaults to 60 seconds.
+ - `timeout: int/float` Time to listen for a reaction. If nothing is supplied, this defaults to 60 seconds.
 
-  - `on_start: coroutine` This is called when the `Paginated.start()` class is called. This is useful for when the pagination is started outside of the object or other context that uses it, ie from a command method.
+ - `on_start: coroutine` This is called when the `Paginated.start()` class is called. This is useful for when the pagination is started outside of the object or other context that uses it, ie from a command method.
 
-  - `on_close: coroutine` Similar to `on_start`, this is called when the Pagination session is closed for any reason. This is useful in cases where you might delete a message that is no longer being used.
+ - `on_close: coroutine` Similar to `on_start`, this is called when the Pagination session is closed for any reason. This is useful in cases where you might delete a message that is no longer being used.
 
-  - `on_error: coroutine` This method is called when some errors are encountered, with a single argument containing the error. If nothing is supplied, the error will be raised instead.
+ - `on_error: coroutine` This method is called when some errors are encountered, with a single argument containing the error. If nothing is supplied, the error will be raised instead.
 
 #### Examples
 
@@ -45,31 +45,28 @@ class HelpPaginator:
             react_map = {
                 "\U000025c0": self.prev,    # left arrow emoji
                 "\U000025b6": self.next     # right arrow emoji
-            }
+            },
             on_start = self.edit_message    # Edit the message with new content when the pagination is ready to start
         )
 
         self.message = message
         self.page = 0
-        self.content = self.get_content()
 
     async def get_content(self):
-        # do something to get content for the next message
+        # do something to get content for the current self.page
         return content
 
     async def next(self):
         self.page += 1
-        self.content = self.get_content()
         await self.edit_message()
 
     async def prev(self):           
         self.page -= 1
-        self.content = self.get_content()
         await self.edit_message()
 
     async def edit_message(self):
         await self.message.edit(
-            self.content
+            self.get_content()
         )
 
 @bot.commands(pass_context = True)
@@ -85,7 +82,7 @@ async def help(ctx):
     await helper.paginator.start()          # Start the pagination
 ```
 
-And that's it. When the paginator is started, you do not need to worry about managing any of the listeners, background tasks, or messages. This is all done automatically.
+And that's it. When the pagination is started, you do not need to worry about managing any of the listeners, background tasks, or messages. This is all done automatically.
 
 #### Getting help
 
