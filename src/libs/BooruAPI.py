@@ -136,7 +136,8 @@ class Derpi(Booru):
         self.url = "https://derpibooru.org/search.json"
         self.queryStrings = {
             "q" : ",".join([a.replace("_", " ") for a in self.tags]),
-            "page" : self.page
+            "page" : self.page,
+            "key" : self.ctx.bot.derpibooru_api
         }
         self.response = requests.get(self.url, params = self.queryStrings)
         self.parsed = json.loads(self.response.text)
