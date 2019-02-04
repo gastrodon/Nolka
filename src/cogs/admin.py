@@ -182,7 +182,6 @@ class Commands:
         )
 
     @commands.command(pass_context = True)
-    @commands.has_permissions(manage_channels = True)
     async def tempmute(self, ctx, user: typing.Union[discord.Member], duration, *, reason = "No reason given"):
         """
         Mute a user for a set duration
