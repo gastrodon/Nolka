@@ -3,6 +3,7 @@ from discord import Permissions
 from discord.ext import commands
 from discord.utils import oauth_url
 from libs.Tools import CustomPermissionError
+from random import randrange
 
 class Helper:
     def __init__(self, ctx, message):
@@ -126,6 +127,30 @@ class Utils:
             raise error
         await ctx.send(
             embed = await Macro.send("The report has been sent")
+        )
+
+    @commands.command(pass_context = True, aliases = ["rand"])
+    async def random(self, ctx, *args):
+        """
+        Get a random number. Default is 0 to 10. One argument: 0 to argument. Two arguments: argument 1 to argument 2
+        `-random [number] [number]`
+        """
+        try:
+            args = tuple(map(int, args))
+        except:
+            args = ()
+        if len(args) is 0:
+            return await ctx.send(
+                embed = await Macro.send(f"Random from 0 to 10: {randrange(0, 10)}")
+            )
+
+        if len(args) is 1:
+            return await ctx.send(
+                embed = await Macro.send(f"Random from 0 to {args[0]}: {randrange(0, args[0])}")
+            )
+
+        return await ctx.send(
+            embed = await Macro.send(f"Random from {args[0]} to {args[1]}: {randrange(args[0], args[1])}")
         )
 
 
