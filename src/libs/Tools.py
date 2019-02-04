@@ -10,10 +10,10 @@ class NoRolesGiven(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-class BooruNoPosts(Exception):
+class NoReactMethod(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-class NoReactMethod(Exception):
+class BooruNoPosts(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
