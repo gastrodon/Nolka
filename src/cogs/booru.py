@@ -13,20 +13,49 @@ class Booru:
     @commands.command(pass_context = True)
     async def gel(self, ctx, *args):
         """
-        Search [gelbooru](https://gelbooru.com/) for images. If called in a sfw channel, any request will have `-rating:explicit` appended
+        Search [gelbooru](https://gelbooru.com/) for images. Any request in a sfw channel will have `safe` appended.
         `-gel [tags]`
         """
 
         loading_message = "Searching..."
         if not ctx.channel.is_nsfw():
-            args = (*args, "-rating:explicit")
+            args = (*args, "rating:safe")
             loading_message = "Searching sfw..."
 
         message = await ctx.send(
             embed = await Macro.send(loading_message)
         )
+        try:
+            response = BooruAPI.Gel(ctx, message, tags = args)
+        except ZeroDivisionError:
+            return await message.edit(
+                embed = await Macro.send("No posts were found")
+            )
+        await response.start()
 
-        response = BooruAPI.Gel(ctx, message, tags = args)
+    @commands.command(pass_context = True)
+    async def derpi(self, ctx, *args):
+        """
+        Search [derpibooru](https://derpibooru.org/) for images. Any request in a sfw channel will have `safe` appended. Any empty query will have `pony` appended, as empty queries don't return any data from the derpibooru api.
+        """
+        loading_message = "Searching..."
+
+        if not(len(args)):
+            args = ("pony",)
+
+        if not ctx.channel.is_nsfw():
+            args = (*args, "safe")
+            loading_message = "searching sfw..."
+
+        message = await ctx.send(
+            embed = await Macro.send(loading_message)
+        )
+        try:
+            response = BooruAPI.Derpi(ctx, message, tags = args)
+        except ZeroDivisionError:
+            return await message.edit(
+                embed = await Macro.send("No posts were found")
+            )
         await response.start()
 
 def setup(bot):
