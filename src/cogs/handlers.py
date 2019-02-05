@@ -1,4 +1,4 @@
-import discord, sys, traceback
+import sys, traceback, discord
 from libs import Macro, Tools
 from discord.ext import commands
 from datetime import datetime
@@ -9,11 +9,10 @@ class ErrorHandler:
 
     async def on_command_error(self, ctx, error):
         error = getattr(error, 'original', error)
-        ignored = (commands.CommandNotFound, commands.UserInputError)
+        ignored = (commands.CommandNotFound)
 
         if isinstance(error, ignored):
             return
-            pass
 
         if isinstance(error, (commands.MissingRequiredArgument, Tools.NoRolesGiven, Tools.CustomPermissionError)):
             return await ctx.send(
@@ -30,7 +29,6 @@ class ErrorHandler:
             )
 
         if isinstance(error, commands.CheckFailure):
-            # I don't remember when this would be called
             return await ctx.send(
                 embed = await Macro.Embed.error("You can't do that")
             )
@@ -38,6 +36,11 @@ class ErrorHandler:
         if isinstance(error, discord.errors.Forbidden):
             return await ctx.send(
                 embed = await Macro.Embed.error("I'm not allowed to do that")
+            )
+
+        if isinstance(error, Tools.RolesTooHigh):
+            return await ctx.send(
+                embed = await Macro.Embed.error("Some of those roles are above mine")
             )
         await self.bot.log.send(
             embed = await Macro.Embed.report(

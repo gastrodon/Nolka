@@ -17,6 +17,6 @@ Contributing docs are located in [docs](github.com/basswaver/Nolka/tree/master/d
 
 #### Dependancies
 
- - [discordpy rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
- - [requests](https://pypi.org/project/requests2/)
- - [untangle](https://pypi.org/project/untangle/)
+- [discordpy rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
+- [requests](https://pypi.org/project/requests2/)
+- [untangle](https://pypi.org/project/untangle/)

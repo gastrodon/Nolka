@@ -58,5 +58,28 @@ class Booru:
             )
         await response.start()
 
+    @commands.command(pass_context = True)
+    async def e621(self, ctx, *args):
+        """
+        doc
+        """
+        loading_message = "Searching..."
+
+        if not ctx.channel.is_nsfw():
+            args = (*args, "rating:safe")
+            loading_message = "searching sfw..."
+
+        message = await ctx.send(
+            embed = await Macro.send(loading_message)
+        )
+        try:
+            response = BooruAPI.E621(ctx, message, tags = args)
+        except ZeroDivisionError:
+            return await message.edit(
+                embed = await Macro.send("No posts were found")
+            )
+        await response.start()
+
+
 def setup(bot):
     bot.add_cog(Booru(bot))
