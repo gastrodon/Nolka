@@ -57,10 +57,10 @@ class Booru:
             )
         await response.start()
 
-    @commands.command(pass_context = True)
+    @commands.command(pass_context = True, aliases = ["e6"])
     async def e621(self, ctx, *args):
         """
-        doc
+        Search [e621](https://621.net/) for images. Any request in a sfw channel will have `safe` appended.
         """
         loading_message = "Searching..."
 
