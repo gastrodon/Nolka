@@ -11,18 +11,19 @@ class Booru:
     Superclass for *booru response objects
     """
     def __init__(self, ctx, message, tags):
+        self.react_map = {
+        "\U000025c0": self.prev_image,
+        "\U000025b6": self.next_image,
+        "\U00002139": self.toggle_info,
+        "\U000023f9": self.stop,
+        "\U0000274c": self.delete
+        }
         self.paginator = Paginate.Paginated(
             bot = ctx.bot,
             message = message,
             member = ctx.author,
             # point-left, point-right, information-symbol
-            react_map = {
-                "\U000025c0": self.prev_image,
-                "\U000025b6": self.next_image,
-                "\U00002139": self.toggle_info,
-                "\U000023f9": self.stop,
-                "\U0000274c": self.delete
-            },
+            react_map = self.react_map,
             on_start = self.edit_message,
             on_error = self.handle
         )
@@ -70,7 +71,6 @@ class Booru:
         await self.message.delete()
         await self.ctx.message.delete()
         await self.stop()
-
 
 class Gel(Booru):
     def __init__(self, *args, **kwargs):
@@ -148,20 +148,19 @@ class Derpi(Booru):
         self.index -= 1
         if self.index < 0:
             self.page = (self.page - 1 + self.page_count) % self.page_count
-            self.queryStrings["page"] = self.page
+            self.queryStrings["page"] = self.page + 1
             self.response = requests.get(self.url, params = self.queryStrings)
             self.parsed = json.loads(self.response.text)
             self.total = len(self.parsed["search"])
             self.index = self.total - 1
         await self.edit_message()
 
-
     async def next_image(self):
         self.index += 1
         if self.index >= self.total:
             self.index = 0
             self.page = (self.page + 1 + self.page_count) % self.page_count
-            self.queryStrings["page"] = self.page
+            self.queryStrings["page"] = self.page + 1
             self.response = requests.get(self.url, params = self.queryStrings)
             self.parsed = json.loads(self.response.text)
             self.total = len(self.parsed["search"])
@@ -176,14 +175,71 @@ class Derpi(Booru):
             rating = "?"
         if self.info:
             embed = await Macro.send("\n".join(tags))
-            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
             return await self.message.edit(
                 embed = embed
             )
         url = f"https:{post['image']}"
         source = f"[Source]({post['source_url'].split(' ')[0]})" if post["source_url"] else "No source"
         embed = await Macro.Embed.image(url)
-        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
+        embed.description = source
+        return await self.message.edit(
+            embed = embed
+        )
+
+class E621(Booru):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.url = "https://e621.net/post/index.json"
+        self.queryStrings = {
+            "tags" : " ".join(self.tags)
+        }
+        self.headers = {'User-Agent': self.ctx.bot.user_agent}
+        self.response = requests.get(self.url, params = self.queryStrings, headers = self.headers)
+        self.parsed = json.loads(self.response.text)
+        self.total = len(self.parsed)
+        self.page_count = None
+
+    async def prev_image(self):
+        self.index -= 1
+        if self.index < 0:
+            if self.page == 0:
+                self.index = 0
+                return await self.edit_message()
+            self.page -= 1
+            self.queryStrings["page"] = self.page + 1
+            self.response = requests.get(self.url, params = self.queryStrings, headers = self.headers)
+            self.parsed = json.loads(self.response.text)
+            self.total = len(self.parsed)
+            self.index = self.total - 1
+        await self.edit_message()
+
+    async def next_image(self):
+        self.index += 1
+        if self.index >= self.total:
+            self.index = 0
+            self.page += 1
+            self.queryStrings["page"] = self.page + 1
+            self.response = request.get(self.url, params = self.queryStrings, headers = self.headers)
+            self.parsed = json.loads(self.response.text)
+            self.total = len(self.parsed)
+        await self.edit_message()
+
+    async def edit_message(self):
+        post = self.parsed[self.index]
+        tags = post["tags"].split(" ")
+        rating = post["rating"].upper()
+        if self.info:
+            embed = await Macro.send("\n".join(tags))
+            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
+            return await self.message.edit(
+                embed = embed
+            )
+        url = post["file_url"]
+        source = f"[Source]({post['source'].split(' ')[0]})"  if post['source'] else "No source"
+        embed = await Macro.Embed.image(url)
+        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
         embed.description = source
         return await self.message.edit(
             embed = embed

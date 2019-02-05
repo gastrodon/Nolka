@@ -42,7 +42,6 @@ class Helper:
     async def build_message(self):
         start = self.index * self.size
         end = min(start + self.size, len(self.help_items.keys()))
-        help_format = "__{}__\n {}\n"
         final = await Macro.send("Help")
         final.title = f"{self.index + 1} of {self.total} pages | {len(self.help_items.keys())} total commands"
         for item in list(self.help_items.keys())[start:end]:
@@ -137,7 +136,7 @@ class Utils:
         """
         try:
             args = tuple(map(int, args))
-        except:
+        except ValueError:
             args = ()
         if len(args) is 0:
             return await ctx.send(
