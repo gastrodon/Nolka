@@ -3,62 +3,50 @@ Server management for a bot named Nolka
 """
 
 import discord, typing
-from libs import Macro, Messages, Tools
+from libs import Macro, Tools
 from discord.ext import commands
 from asyncio import sleep
 
 class Workers:
     @staticmethod
-    async def _notify(ctx, user, type, reason):
+    async def _notify(ctx, user, mode, reason):
         try:
             if user.dm_channel is None:
                 await user.create_dm()
             await user.dm_channel.send(
                 embed = await Macro.Embed.infraction(
-                    Messages.removedGeneric.format(type, ctx.guild, reason)
+                    f"You have been {mode} from the server {ctx.guild}\nReason given: {reason}"
                 )
             )
             return
-        except:
+        except discord.Forbidden:
             return
-
-    @staticmethod
-    async def role_timer(ctx, user, role, duration):
-        await ctx.send(
-            embed = await Macro.send(Messages.muted.format(user.mention))
-        )
-        await user.add_roles(role)
-        await sleep(duration)
-        await user.remove_roles(role)
-        await ctx.send(
-            embed = await Macro.send(Messages.unmuted.format(user.mention))
-        )
 
     @staticmethod
     async def mute_timer(ctx, user, duration, reason):
         for channel in ctx.guild.channels:
             await channel.set_permissions(
                 user,
-                reason = Messages.muted.format(ctx.author.name) + " " + Messages.reasonGiven.format(reason),
+                reason = f"{user.name} muted by {ctx.author.name}, {reason}",
                 send_messages = False,
                 add_reactions = False
             )
         await ctx.send(
             embed = await Macro.send(
-                Messages.muted.format(user.mention)
+                f"Muted {user.name}"
             )
         )
         await sleep(duration)
         for channel in ctx.guild.categories:
             await channel.set_permissions(
                 user,
-                reason = Messages.unmuted.format(ctx.author.name) + " " + Messages.reasonGiven.format(reason),
+                reason = f"{user.name} unmuted",
                 send_messages = None,
                 add_reactions = None
             )
         await ctx.send(
             embed = await Macro.send(
-                Messages.unmuted.format(user.mention)
+                f"Unmuted {user.name}"
             )
         )
 
@@ -105,18 +93,16 @@ class Commands:
             roles.append(new)
         if len(new_roles) is not 0:
             await ctx.send(
-                embed = await Macro.send(Messages.rolesMade.format(
-                    ", ".join(new_roles)
-                ))
+                embed = await Macro.send(f"Created the roles {', '.join(new_roles)}")
             )
         if len(users) is 0:
             return
         for user in users:
             await user.add_roles(*roles)
+        users = map(str, users)
+        roles = map(str, roles)
         await ctx.send(
-            embed = await Macro.send(Messages.rolesGiven.format(
-                ", ".join(map(str, users)), ", ".join(map(str, roles))
-            ))
+            embed = await Macro.send(f"Gave {', '.join(users)} the roles {', '.join(roles)}")
         )
 
     @role.command(pass_context = True, name = "take", aliases = ["remove"])
@@ -132,10 +118,10 @@ class Commands:
             raise discord.MissingRequiredArgument(discord.Role if len(roles) is 0 else discord.Member)
         for member in members:
             await member.remove_roles(*roles)
+        members = map(str, members)
+        roles = map(str, roles)
         await ctx.channel.send(
-            embed = await Macro.send(Messages.rolesTaken.format(
-                ", ".join(map(str, members)), ", ".join(map(str, roles))
-            ))
+            embed = await Macro.send(f"The users {', '.join(members)} no longer have the roles {', '.join(roles)}")
         )
 
     @role.command(pass_context = True, name = "kill", aliases = ["delete"])
@@ -147,12 +133,13 @@ class Commands:
         """
         if len(roles) is 0:
             raise discord.MissingRequiredArgument(discord.Role)
+        if ctx.guild.me.top_role < max(roles):
+            raise Tools.RolesTooHigh
         for role in roles:
             await role.delete()
+        roles = map(str, roles)
         await ctx.channel.send(
-            embed = await Macro.send(Messages.rolesKilled.format(
-                ", ".join(map(str, roles))
-            ))
+            embed = await Macro.send(f"Killed the roles {', '.join(roles)}")
         )
 
     @commands.command(pass_context = True, aliases = ["hammer"])
@@ -189,7 +176,7 @@ class Commands:
         """
         try:
             self.bot.loop.create_task(Workers.mute_timer(ctx, user, int(duration), reason))
-        except:
+        except ValueError:
             pass
         try:
             duration = int(duration[0:-1]) * self.time_factors[duration[-1]]
