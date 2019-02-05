@@ -31,7 +31,7 @@ class Booru:
         self.tags = tags
         self.index = 0
         self.total = 0
-        self.page = 1
+        self.page = 0
         self.parsed = None
         self.info = False
 
@@ -84,7 +84,7 @@ class Gel(Booru):
             "api_key" : self.ctx.bot.gelbooru_api,
             "user_id" : self.ctx.bot.gelbooru_id,
             "tags" : " ".join(self.tags),
-            "pid" : self.page
+            "pid" : self.page + 1
         }
         self.response = requests.get(self.url, params = self.queryStrings)
         self.parsed = untangle.parse(self.response.text)
@@ -136,7 +136,7 @@ class Derpi(Booru):
         self.url = "https://derpibooru.org/search.json"
         self.queryStrings = {
             "q" : ",".join([a.replace("_", " ") for a in self.tags]),
-            "page" : self.page,
+            "page" : self.page + 1,
             "key" : self.ctx.bot.derpibooru_api
         }
         self.response = requests.get(self.url, params = self.queryStrings)
@@ -148,8 +148,6 @@ class Derpi(Booru):
         self.index -= 1
         if self.index < 0:
             self.page = (self.page - 1 + self.page_count) % self.page_count
-            if self.page is 0:
-                self.page = self.page_count
             self.queryStrings["page"] = self.page
             self.response = requests.get(self.url, params = self.queryStrings)
             self.parsed = json.loads(self.response.text)
