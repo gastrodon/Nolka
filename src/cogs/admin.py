@@ -19,7 +19,7 @@ class Workers:
                 )
             )
             return
-        except:
+        except discord.Forbidden:
             return
 
     @staticmethod

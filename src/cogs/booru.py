@@ -3,7 +3,6 @@ Booru query for a bot named Nolka
 """
 
 from libs import Macro, BooruAPI
-from libs.Tools import BooruNoPosts
 from discord.ext import commands
 
 class Booru:

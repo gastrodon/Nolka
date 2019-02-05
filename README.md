@@ -1,4 +1,5 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8ae88459351e4f31ada0174126a72b48)](https://www.codacy.com/app/basswaver/Nolka?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=basswaver/Nolka&amp;utm_campaign=Badge_Grade)
+
 <a href = "https://discord.gg/h3ZnhRM">
 <img src = "./docs/images/discord.svg" height = 30>
 </a>

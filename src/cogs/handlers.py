@@ -1,4 +1,4 @@
-import sys, traceback, discord
+import traceback, discord
 from libs import Macro, Tools
 from discord.ext import commands
 from datetime import datetime
