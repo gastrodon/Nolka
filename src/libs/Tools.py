@@ -17,3 +17,7 @@ class NoReactMethod(Exception):
 class BooruNoPosts(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class RolesTooHigh(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

@@ -8,6 +8,7 @@ class CachedBot(commands.Bot):
         self.gelbooru_api = self.config["gelbooruAPI"]
         self.gelbooru_id = self.config["gelbooruID"]
         self.derpibooru_api = self.config["derpibooruAPI"]
+        self.user_agent = self.config["e621Agent"]
         # a set of ongoing tasks, like a list
         self.ongoing = []
 

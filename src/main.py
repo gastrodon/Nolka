@@ -5,8 +5,7 @@ Author : Zero <dakoolstwunn@gmail.com>
 DOCS : Coming soon
 """
 
-import discord, json, os, datetime, sys, traceback, botclass
-from discord.ext import commands
+import discord, json, os, botclass
 
 class Cogs:
     safe = [
