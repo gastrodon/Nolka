@@ -53,8 +53,5 @@ class ErrorHandler:
             )
         )
 
-    async def on_guild_join(self, guild):
-        await self.bot.mods.setup(guild)
-
 def setup(bot):
     bot.add_cog(ErrorHandler(bot))
