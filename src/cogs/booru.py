@@ -36,6 +36,7 @@ class Booru:
     async def derpi(self, ctx, *args):
         """
         Search [derpibooru](https://derpibooru.org/) for images. Any request in a sfw channel will have `safe` appended. Any empty query will have `pony` appended, as empty queries don't return any data from the derpibooru api.
+        `-derpi [tags]`
         """
         loading_message = "Searching..."
 
@@ -61,6 +62,7 @@ class Booru:
     async def e621(self, ctx, *args):
         """
         Search [e621](https://621.net/) for images. Any request in a sfw channel will have `safe` appended.
+        -e621 [tags]
         """
         loading_message = "Searching..."
 
