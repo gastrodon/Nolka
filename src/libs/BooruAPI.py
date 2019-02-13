@@ -1,6 +1,5 @@
-import untangle, json, requests
+import untangle, json, requests, os, discord
 from libs import Macro, Paginate
-from discord import Embed
 
 class BooruNoPosts(Exception):
     def __init__(self, *args, **kwargs):
@@ -27,6 +26,9 @@ class Booru:
             on_start = self.edit_message,
             on_error = self.handle
         )
+        self.cachedir = os.path.dirname(os.path.realpath(__file__)) + "/__cache"
+        if not os.path.exists(self.cachedir):
+            os.mkdir(self.cachedir)
         self.ctx = ctx
         self.message = message
         self.tags = tags
@@ -61,7 +63,7 @@ class Booru:
     async def start(self):
         await self.paginator.start()
 
-    async def stop(self):
+    async def stop(self, remove = False):
         await self.paginator.close()
 
     async def edit_message(self):
@@ -70,7 +72,7 @@ class Booru:
     async def delete(self):
         await self.message.delete()
         await self.ctx.message.delete()
-        await self.stop()
+        await self.stop(remove = True)
 
 class Gel(Booru):
     def __init__(self, *args, **kwargs):
@@ -116,15 +118,16 @@ class Gel(Booru):
         if self.info:
             tags = [tag.replace("_", "\_") for tag in post["tags"].strip().split(" ")]
             embed = await Macro.send("\n".join(tags))
-            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+            embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
             return await self.message.edit(
                 embed = embed
             )
 
         url = post["file_url"]
+        self.url = url
         source = f"[Source]({post['source'].split(' ')[0]})" if post["source"] else "No source"
         embed = await Macro.Embed.image(url)
-        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page} | Rating: {rating}"
+        embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
         embed.description = source
         return await self.message.edit(
             embed = embed
@@ -180,6 +183,7 @@ class Derpi(Booru):
                 embed = embed
             )
         url = f"https:{post['image']}"
+        self.url = url
         source = f"[Source]({post['source_url'].split(' ')[0]})" if post["source_url"] else "No source"
         embed = await Macro.Embed.image(url)
         embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"
@@ -237,6 +241,7 @@ class E621(Booru):
                 embed = embed
             )
         url = post["file_url"]
+        self.url = url
         source = f"[Source]({post['source'].split(' ')[0]})"  if post['source'] else "No source"
         embed = await Macro.Embed.image(url)
         embed.title = f"{self.index + 1} of {self.total} results | Page {self.page + 1} | Rating: {rating}"

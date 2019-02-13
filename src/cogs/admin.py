@@ -23,37 +23,38 @@ class Workers:
             return
 
     @staticmethod
-    async def mute_timer(ctx, user, duration, reason):
-        for channel in ctx.guild.channels:
+    async def _mute_create(ctx):
+        await ctx.send(
+            embed = await Macro.send("Let me set up a `muted` role")
+        )
+        guild = ctx.guild
+        role = await guild.create_role(name = "muted")
+        for channel in guild.channels:
             await channel.set_permissions(
-                user,
-                reason = f"{user.name} muted by {ctx.author.name}, {reason}",
+                role,
+                reason = f"Created a mute role",
                 send_messages = False,
                 add_reactions = False
             )
+        role.edit(position = guild.me.top_role.position - 1)
+        return role
+
+    @staticmethod
+    async def mute_timer(ctx, user, duration):
+        role = discord.utils.find(lambda x : x.name == "muted", ctx.guild.roles) or await Workers._mute_create(ctx)
+        await user.add_roles(role)
         await ctx.send(
-            embed = await Macro.send(
-                f"Muted {user.name}"
-            )
+            embed = await Macro.send(f"Muted {user.name}")
         )
         await sleep(duration)
-        for channel in ctx.guild.categories:
-            await channel.set_permissions(
-                user,
-                reason = f"{user.name} unmuted",
-                send_messages = None,
-                add_reactions = None
-            )
+        await user.remove_roles(role)
         await ctx.send(
-            embed = await Macro.send(
-                f"Unmuted {user.name}"
-            )
+            embed = await Macro.send(f"Unmuted {user.name}")
         )
 
-class Commands:
+class Admin:
     def __init__(self, bot):
         self.bot = bot
-        self.time_factors = {1, 60, 24}
         self.time_factors = {
             "d" : 86400,
             "h" : 3600,
@@ -64,7 +65,6 @@ class Commands:
 
     @commands.group(pass_context = True, aliases = ["roles"])
     async def role(self, ctx):
-        # TODO have this list user roles
         if ctx.invoked_subcommand is None:
             if len(ctx.author.roles[1:]):
                 roles = list(map(str, ctx.author.roles[1:]))
@@ -169,20 +169,20 @@ class Commands:
         )
 
     @commands.command(pass_context = True)
-    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration, *, reason = "No reason given"):
+    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration):
         """
         Mute a user for a set duration
         `-tempmute <user> <number of d|h|m|s|> [reason]`
         """
         try:
-            self.bot.loop.create_task(Workers.mute_timer(ctx, user, int(duration), reason))
+            self.bot.loop.create_task(Workers.mute_timer(ctx, user, int(duration)))
         except ValueError:
             pass
         try:
             duration = int(duration[0:-1]) * self.time_factors[duration[-1]]
-            self.bot.loop.create_task(Workers.mute_timer(ctx, user, duration, reason))
+            self.bot.loop.create_task(Workers.mute_timer(ctx, user, duration))
         except:
             raise commands.BadArgument
 
 def setup(bot):
-    bot.add_cog(Commands(bot))
+    bot.add_cog(Admin(bot))

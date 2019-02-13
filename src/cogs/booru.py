@@ -9,10 +9,15 @@ class Booru:
     def __init__(self, bot):
         self.bot = bot
 
+    async def booru_no_perms(self, message):
+        return await message.edit(
+            embed = await Macro.Embed.error("I can't start pagination without the `manage_messages` permission")
+        )
+
     @commands.command(pass_context = True)
     async def gel(self, ctx, *args):
         """
-        Search [gelbooru](https://gelbooru.com/) for images. Any request in a sfw channel will have `safe` appended.
+        Search [gelbooru](https://gelbooru.com/) for images. Any request in a sfw channel will have `rating:safe` appended.
         `-gel [tags]`
         """
 
@@ -24,6 +29,10 @@ class Booru:
         message = await ctx.send(
             embed = await Macro.send(loading_message)
         )
+
+        if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
+            return await self.booru_no_perms(message)
+
         try:
             response = BooruAPI.Gel(ctx, message, tags = args)
         except ZeroDivisionError:
@@ -36,6 +45,7 @@ class Booru:
     async def derpi(self, ctx, *args):
         """
         Search [derpibooru](https://derpibooru.org/) for images. Any request in a sfw channel will have `safe` appended. Any empty query will have `pony` appended, as empty queries don't return any data from the derpibooru api.
+        `-derpi [tags]`
         """
         loading_message = "Searching..."
 
@@ -49,6 +59,10 @@ class Booru:
         message = await ctx.send(
             embed = await Macro.send(loading_message)
         )
+
+        if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
+            return await self.booru_no_perms(message)
+
         try:
             response = BooruAPI.Derpi(ctx, message, tags = args)
         except ZeroDivisionError:
@@ -60,7 +74,8 @@ class Booru:
     @commands.command(pass_context = True, aliases = ["e6"])
     async def e621(self, ctx, *args):
         """
-        Search [e621](https://621.net/) for images. Any request in a sfw channel will have `safe` appended.
+        Search [e621](https://e621.net/) for images. Any request in a sfw channel will have `safe` appended.
+        -e621 [tags]
         """
         loading_message = "Searching..."
 
@@ -71,6 +86,10 @@ class Booru:
         message = await ctx.send(
             embed = await Macro.send(loading_message)
         )
+
+        if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
+            return await self.booru_no_perms(message)
+
         try:
             response = BooruAPI.E621(ctx, message, tags = args)
         except ZeroDivisionError:

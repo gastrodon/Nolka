@@ -19,16 +19,19 @@ class Helper:
             on_start = self.edit_message
         )
 
+        self.ignored = {"ErrorHandler"}
         self.ctx = ctx
         self.message = message
         self.size = 3
         self.index = 0
-        self.help_items = self.generate_help()
-        self.total = -(-len(self.help_items) // self.size)
+        self.cogs = [c for c in ctx.bot.cogs.keys() if c not in self.ignored]
+        self.total = len(self.cogs)
 
-    def generate_help(self):
+    async def generate_help(self):
         help_items = {}
-        for command in self.ctx.bot.commands:
+        current = self.cogs[self.index]
+        current_commands = self.ctx.bot.get_cog_commands(current)
+        for command in current_commands:
             if isinstance(command, commands.Group):
                 for sub_com in command.commands:
                     docstring = sub_com.help if sub_com.help else "No docstring"
@@ -40,20 +43,16 @@ class Helper:
         return help_items
 
     async def build_message(self):
-        start = self.index * self.size
-        end = min(start + self.size, len(self.help_items.keys()))
-        final = await Macro.send("Help")
-        final.title = f"{self.index + 1} of {self.total} pages | {len(self.help_items.keys())} total commands"
-        for item in list(self.help_items.keys())[start:end]:
-            if isinstance(item, dict):
-                for subitem in list(item.keys()):
-                    final.add_field(
-                        name = f"{subitem}", value = item[subitem], inline = False
-                    )
-            final.add_field(
-                name = f"{item}", value = self.help_items[item], inline = False
+        items = await self.generate_help()
+        message = await Macro.send(None)
+        message.title = f"Page {self.index + 1} of {self.total} | {self.cogs[self.index]} cog"
+        for item in items:
+            message.add_field(
+                name = f"{item}",
+                value = items[item],
+                inline = False
             )
-        return final
+        return message
 
         #for item in list()
 
@@ -82,6 +81,14 @@ class Utils:
     def __init__(self, bot):
         self.bot = bot
 
+    async def help_no_perms(self, message):
+        """
+        Ask Nolka for help without pagination
+        """
+        return await  message.edit(
+            embed = await Macro.Embed.error("I can't start pagination without the `manage_messages` permission")
+        )
+
     @commands.command(pass_context = True)
     async def help(self, ctx):
         """
@@ -91,6 +98,9 @@ class Utils:
         message = await ctx.send(
             embed = await Macro.send("Getting help")
         )
+
+        if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
+            return await self.help_no_perms(message)
 
         helper = Helper(ctx, message)
         await helper.start()
