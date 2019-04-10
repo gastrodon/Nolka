@@ -30,7 +30,7 @@ class Helper:
     async def generate_help(self):
         help_items = {}
         current = self.cogs[self.index]
-        current_commands = self.ctx.bot.get_cog_commands(current)
+        current_commands = self.ctx.bot.get_cog(current).get_commands()
         for command in current_commands:
             if isinstance(command, commands.Group):
                 for sub_com in command.commands:
@@ -77,7 +77,7 @@ class Helper:
             embed = await self.build_message()
         )
 
-class Utils:
+class Utils(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

@@ -5,7 +5,7 @@ Booru query for a bot named Nolka
 from libs import Macro, BooruAPI
 from discord.ext import commands
 
-class Booru:
+class Booru(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

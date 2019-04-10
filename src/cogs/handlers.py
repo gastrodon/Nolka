@@ -3,10 +3,11 @@ from libs import Macro, Tools
 from discord.ext import commands
 from datetime import datetime
 
-class ErrorHandler:
+class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         error = getattr(error, 'original', error)
         ignored = (commands.CommandNotFound)

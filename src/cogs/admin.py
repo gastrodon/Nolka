@@ -52,7 +52,7 @@ class Workers:
             embed = await Macro.send(f"Unmuted {user.name}")
         )
 
-class Admin:
+class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.time_factors = {
