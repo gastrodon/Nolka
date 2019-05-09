@@ -35,7 +35,7 @@ class Roleme(commands.Cog):
     async def rollme_allow(self, ctx, *roles: typing.Union[discord.Role]):
         """
         Used to allow users to assign themselves given roles.
-        `roleme allow <roles>`
+        `-roleme allow <roles>`
         """
         await ctx.bot.add_self_roles(ctx, *roles)
 
