@@ -43,6 +43,12 @@ class ErrorHandler(commands.Cog):
             return await ctx.send(
                 embed = await Macro.Embed.error("Some of those roles are above mine")
             )
+
+        if isinstance(error, Tools.NoValidSelfRoles):
+            return await ctx.send(
+                embed = await Macro.Embed.error("You can't self assign any of these roles")
+            )
+
         await self.bot.log.send(
             embed = await Macro.Embed.report(
                 "Autoreported from guild {} at {}\nMessage: {}\nException in command {}\n{} {}\n\n{}".format(
