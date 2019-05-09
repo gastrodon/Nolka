@@ -10,7 +10,7 @@ A discord bot named Nolka written in Python using discordpy
 
 #### How to use
 
-Invite Nolka to your server [here](https://discordapp.com/oauth2/authorize?client_id=480913731694362625&scope=bot&permissions=268443702)
+Invite Nolka to your server [here](https://discordapp.com/oauth2/authorize?client_id=480913731694362625&scope=bot&permissions=8)
 
 #### Contributing Guide
 
