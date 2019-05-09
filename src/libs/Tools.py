@@ -21,3 +21,7 @@ class BooruNoPosts(Exception):
 class RolesTooHigh(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class NoValidSelfRoles(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

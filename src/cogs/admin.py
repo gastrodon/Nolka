@@ -62,12 +62,16 @@ class Admin(commands.Cog):
             "s" : 1,
         }
 
-
     @commands.group(pass_context = True, aliases = ["roles"])
     async def role(self, ctx):
+        """
+        Base class for role commands, or standalone command for looking at user roles.
+        If called alone, will return roles belonging to the caller.
+        `-role`
+        """
         if ctx.invoked_subcommand is None:
             if len(ctx.author.roles[1:]):
-                roles = list(map(str, ctx.author.roles[1:]))
+                roles = list(map(lambda x : f"`{x}`", ctx.author.roles[1:]))
                 return await ctx.send(
                     embed = await Macro.send(f"You have the roles {', '.join(roles)}")
                 )
@@ -87,7 +91,7 @@ class Admin(commands.Cog):
         roles = list(filter(lambda x : isinstance(x, discord.Role), args))
         new_roles = list(filter(lambda x : isinstance(x, str), args))
         if len(roles) + len(new_roles) is 0:
-            raise discord.MissingRequiredArgument(discord.Role)
+            raise commands.MissingRequiredArgument(discord.Role)
         for new in new_roles:
             new = await ctx.guild.create_role(name = new)
             roles.append(new)
@@ -115,7 +119,7 @@ class Admin(commands.Cog):
         roles = list(filter(lambda x : isinstance(x, discord.Role), args))
         members = list(filter(lambda x : isinstance(x, discord.Member), args))
         if len(roles) is 0 or len(members) is 0:
-            raise discord.MissingRequiredArgument(discord.Role if len(roles) is 0 else discord.Member)
+            raise commands.MissingRequiredArgument(discord.Role if len(roles) is 0 else discord.Member)
         for member in members:
             await member.remove_roles(*roles)
         members = map(str, members)
@@ -132,7 +136,7 @@ class Admin(commands.Cog):
         `-role kill <roles>`
         """
         if len(roles) is 0:
-            raise discord.MissingRequiredArgument(discord.Role)
+            raise commands.MissingRequiredArgument(discord.Role)
         if ctx.guild.me.top_role < max(roles):
             raise Tools.RolesTooHigh
         for role in roles:

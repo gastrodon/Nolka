@@ -12,7 +12,8 @@ class Cogs:
         "cogs.admin",
         "cogs.booru",
         "cogs.utils",
-        "cogs.handlers"
+        "cogs.handlers",
+        "cogs.roleme"
     ]
 
 
