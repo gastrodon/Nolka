@@ -20,7 +20,7 @@ class Roleme(commands.Cog):
         `-roleme`
         """
         if ctx.invoked_subcommand is None:
-            allowed = [f"`{ctx.guild.get_role(role)}`" for role in ctx.bot.cache[str(ctx.guild.id)]["self_roles"]]
+            allowed = [f"`{ctx.guild.get_role(role)}`" for role in ctx.bot.cache[str(ctx.guild.id)].get("self_roles", [])]
             if len(allowed):
                 return await ctx.send(
                     embed = await Macro.send(f"You can assign yourself the roles: {', '.join(allowed)}")
@@ -66,7 +66,7 @@ class Roleme(commands.Cog):
         if len(roles) is 0:
             raise commands.MissingRequiredArgument(discord.Role)
 
-        valid = [role for role in roles if role.id in ctx.bot.cache[str(ctx.guild.id)]["self_roles"]]
+        valid = [role for role in roles if role.id in ctx.bot.cache[str(ctx.guild.id)].get("self_roles", [])]
 
         if len(valid) is 0:
             raise Tools.NoValidSelfRoles
@@ -88,7 +88,7 @@ class Roleme(commands.Cog):
         if len(roles) is 0:
             raise commands.MissingRequiredArgument(discord.Role)
 
-        valid = [role for role in roles if role.id in ctx.bot.cache[str(ctx.guild.id)]["self_roles"] and role in ctx.author.roles]
+        valid = [role for role in roles if role.id in ctx.bot.cache[str(ctx.guild.id)].get("self_roles", []) and role in ctx.author.roles]
 
         if len(valid) is 0:
             raise Tools.NoValidSelfRoles

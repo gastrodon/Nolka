@@ -83,3 +83,7 @@ class Embed:
         return message
 
 send = Embed.message
+error = Embed.error
+image = Embed.image
+report = Embed.report
+infraction = Embed.infraction

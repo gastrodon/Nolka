@@ -49,6 +49,16 @@ class ErrorHandler(commands.Cog):
                 embed = await Macro.Embed.error("You can't self assign any of these roles")
             )
 
+        if isinstance(error, Tools.NotSFW):
+            return await ctx.send(
+                embed = await Macro.Embed.error("This isn't allowed in SFW channels.")
+            )
+
+        if isinstance(error, Tools.CannotPaginate):
+            return await ctx.send(
+                embed = await Macro.error("The permission `manage_messages` is required for pagination")
+            )
+
         await self.bot.log.send(
             embed = await Macro.Embed.report(
                 "Autoreported from guild {} at {}\nMessage: {}\nException in command {}\n{} {}\n\n{}".format(

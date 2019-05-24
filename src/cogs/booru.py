@@ -2,7 +2,7 @@
 Booru query for a bot named Nolka
 """
 
-from libs import Macro, BooruAPI
+from libs import Macro, BooruAPI, Tools
 from discord.ext import commands
 
 class Booru(commands.Cog):
@@ -18,13 +18,13 @@ class Booru(commands.Cog):
     async def gel(self, ctx, *args):
         """
         Search [gelbooru](https://gelbooru.com/) for images. Any request in a sfw channel will have `rating:safe` appended.
+        This will not work in SFW channels, due to gelboorus tendency to allow the `safe` ratings on NSFW pics (try `-gel bdsm rating:safe`)
         `-gel [tags]`
         """
+        if not ctx.channel.is_nsfw():
+            raise Tools.NotSFW
 
         loading_message = "Searching..."
-        if not ctx.channel.is_nsfw():
-            args = (*args, "rating:safe")
-            loading_message = "Searching sfw..."
 
         message = await ctx.send(
             embed = await Macro.send(loading_message)

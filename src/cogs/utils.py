@@ -1,5 +1,5 @@
 from libs import Macro, Paginate
-from discord import Permissions
+from discord import Permissions, Color
 from discord.ext import commands
 from discord.utils import oauth_url
 from libs.Tools import CustomPermissionError
@@ -162,6 +162,56 @@ class Utils(commands.Cog):
             embed = await Macro.send(f"Random from {args[0]} to {args[1]}: {randrange(args[0], args[1])}")
         )
 
+    @commands.command(pass_context = True, aliases = ["colour"])
+    async def color(self, ctx):
+        generated = randrange(0, 16777215)
+        await ctx.send(
+            embed = await Macro.send(hex(generated).replace("0x", "#").upper(), color = Color(generated))
+        )
+
+    @commands.group(pass_context = True, name = "prefix")
+    async def prefix(self, ctx):
+        if ctx.invoked_subcommand is None:
+            return await ctx.send(
+                embed = await Macro.send(f"The guilds prefixes are {', '.join(await ctx.bot.command_prefix(ctx.bot, ctx.message))}")
+            )
+
+    @prefix.command(pass_context = True, name = "set")
+    async def prefix_set(self, ctx, *args):
+        if not args:
+            raise CustomPermissionError
+
+        fix = args[0]
+
+        if fix in await ctx.bot.command_prefix(ctx.bot, ctx.message):
+            return await ctx.send(
+                embed = await Macro.send(f"{fix} is already a prefix")
+            )
+
+        await ctx.bot.set_prefix(ctx, fix)
+
+        return await ctx.send(
+            embed = await Macro.send(f"{fix} was set")
+        )
+
+    @prefix.command(pass_context = True, name = "add")
+    async def prefix_add(self, ctx, *args):
+        if not args:
+            raise CustomPermissionError
+
+        await ctx.bot.add_prefix(ctx, *args)
+
+        return await ctx.send(
+            embed = await Macro.send(f"{', '.join(args)} can now be used as a prefix")
+        )
+
+    @prefix.command(pass_context = True, name = "reset")
+    async def prefix_reset(self, ctx):
+        await ctx.bot.clear_prefix(ctx)
+
+        return await ctx.send(
+            embed = await Macro.send("The guild prefix was cleared")
+        )
 
 def setup(bot):
     bot.add_cog(Utils(bot))

@@ -21,9 +21,7 @@ class CachedBot(commands.Bot):
     async def new_cache(self):
         buffer = {}
         for guild in self.guilds:
-            buffer[guild.id] = {
-                "self_roles": []
-            }
+            buffer[guild.id] = {}
         return buffer
 
     async def read_cache(self):
@@ -50,5 +48,18 @@ class CachedBot(commands.Bot):
         await self.update_cache()
 
     async def new_guild_cache(self, ctx):
-        self.cache[ctx.guild.id] = {}
+        self.cache[str(ctx.guild.id)] = {}
+        await self.update_cache()
+
+    async def set_prefix(self, ctx, *prefixes):
+        self.cache[str(ctx.guild.id)]["prefix"] = prefixes
+        await self.update_cache()
+
+    async def add_prefix(self, ctx, *prefixes):
+        current = await self.command_prefix(ctx.bot, ctx.message)
+        await self.set_prefix(ctx, *[*current, *prefixes])
+
+
+    async def clear_prefix(self, ctx):
+        del self.cache[str(ctx.guild.id)]["prefix"]
         await self.update_cache()

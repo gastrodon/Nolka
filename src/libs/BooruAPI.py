@@ -1,10 +1,6 @@
 import untangle, json, requests, os, discord
 from libs import Macro, Paginate
 
-class BooruNoPosts(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 class Booru:
     """
     Superclass for *booru response objects
@@ -14,7 +10,7 @@ class Booru:
         "\U000025c0": self.prev_image,
         "\U000025b6": self.next_image,
         "\U00002139": self.toggle_info,
-        "\U000023f9": self.stop,
+        "\U000023f9": self.stop_pagination,
         "\U0000274c": self.delete
         }
         self.paginator = Paginate.Paginated(
@@ -60,10 +56,10 @@ class Booru:
             embed = await Macro.send("No posts were found")
         )
 
-    async def start(self):
+    async def start_pagination(self):
         await self.paginator.start()
 
-    async def stop(self, remove = False):
+    async def stop_pagination(self, remove = False):
         await self.paginator.close()
 
     async def edit_message(self):
@@ -72,7 +68,7 @@ class Booru:
     async def delete(self):
         await self.message.delete()
         await self.ctx.message.delete()
-        await self.stop(remove = True)
+        await self.stop_pagination(remove = True)
 
 class Gel(Booru):
     def __init__(self, *args, **kwargs):
@@ -132,6 +128,11 @@ class Gel(Booru):
         return await self.message.edit(
             embed = embed
         )
+
+class Safe(Gel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, *kwargs)
+        self.url = "https://safebooru.com/index.php"
 
 class Derpi(Booru):
     def __init__(self, *args, **kwargs):

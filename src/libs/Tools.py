@@ -25,3 +25,11 @@ class RolesTooHigh(Exception):
 class NoValidSelfRoles(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class NotSFW(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class CannotPaginate(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

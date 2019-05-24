@@ -1,5 +1,6 @@
 *.json
-__*
+__cache
+__pycache__
 .ignore
 *.old
 font
