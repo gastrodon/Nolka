@@ -164,6 +164,10 @@ class Utils(commands.Cog):
 
     @commands.command(pass_context = True, aliases = ["colour"])
     async def color(self, ctx):
+        """
+        Get a random color
+        `-color`
+        """
         generated = randrange(0, 16777215)
         await ctx.send(
             embed = await Macro.send(hex(generated).replace("0x", "#").upper(), color = Color(generated))
@@ -171,13 +175,22 @@ class Utils(commands.Cog):
 
     @commands.group(pass_context = True, name = "prefix")
     async def prefix(self, ctx):
+        """
+        Get the prefixes used for Nolka on this guild
+        `-prefix`
+        """
         if ctx.invoked_subcommand is None:
             return await ctx.send(
                 embed = await Macro.send(f"The guilds prefixes are {', '.join(await ctx.bot.command_prefix(ctx.bot, ctx.message))}")
             )
 
+    @commands.has_permissions(administrator = True)
     @prefix.command(pass_context = True, name = "set")
     async def prefix_set(self, ctx, *args):
+        """
+        Set Nolka's prefix for this guild
+        `-prefix set <prefix>`
+        """
         if not args:
             raise CustomPermissionError
 
@@ -194,8 +207,13 @@ class Utils(commands.Cog):
             embed = await Macro.send(f"{fix} was set")
         )
 
+    @commands.has_permissions(administrator = True)
     @prefix.command(pass_context = True, name = "add")
     async def prefix_add(self, ctx, *args):
+        """
+        Add a prefix to Nolka's prefixes for this guild
+        `-prefix add <prefixes>`
+        """
         if not args:
             raise CustomPermissionError
 
@@ -205,12 +223,17 @@ class Utils(commands.Cog):
             embed = await Macro.send(f"{', '.join(args)} can now be used as a prefix")
         )
 
+    @commands.has_permissions(administrator = True)
     @prefix.command(pass_context = True, name = "reset")
     async def prefix_reset(self, ctx):
+        """
+        Reset the prefix that Nolka uses on this guild
+        `-prefux reset`
+        """
         await ctx.bot.clear_prefix(ctx)
 
         return await ctx.send(
-            embed = await Macro.send("The guild prefix was cleared")
+            embed = await Macro.send("The guild prefix was reset")
         )
 
 def setup(bot):
