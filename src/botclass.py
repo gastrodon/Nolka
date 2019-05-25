@@ -61,5 +61,6 @@ class CachedBot(commands.Bot):
 
 
     async def clear_prefix(self, ctx):
-        del self.cache[str(ctx.guild.id)]["prefix"]
+        if self.cache[str(ctx.guild.id)].get("prefix"):
+            del self.cache[str(ctx.guild.id)]["prefix"]
         await self.update_cache()
