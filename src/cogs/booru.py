@@ -39,7 +39,7 @@ class Booru(commands.Cog):
             return await message.edit(
                 embed = await Macro.send("No posts were found")
             )
-        await response.start()
+        await response.start_pagination()
 
     @commands.command(pass_context = True)
     async def derpi(self, ctx, *args):
@@ -69,7 +69,7 @@ class Booru(commands.Cog):
             return await message.edit(
                 embed = await Macro.send("No posts were found")
             )
-        await response.start()
+        await response.start_pagination()
 
     @commands.command(pass_context = True, aliases = ["e6"])
     async def e621(self, ctx, *args):
@@ -96,7 +96,7 @@ class Booru(commands.Cog):
             return await message.edit(
                 embed = await Macro.send("No posts were found")
             )
-        await response.start()
+        await response.start_pagination()
 
 
 def setup(bot):

@@ -81,7 +81,7 @@ class Gel(Booru):
             "s"   : "post",
             "api_key" : self.ctx.bot.gelbooru_api,
             "user_id" : self.ctx.bot.gelbooru_id,
-            "tags" : " ".join(self.tags),
+            "tags" : f"{' '.join(self.tags)} -animated",
             "pid" : self.page + 1
         }
         self.response = requests.get(self.url, params = self.queryStrings)
@@ -139,7 +139,7 @@ class Derpi(Booru):
         super().__init__(*args, **kwargs)
         self.url = "https://derpibooru.org/search.json"
         self.queryStrings = {
-            "q" : ",".join([a.replace("_", " ") for a in self.tags]),
+            "q" : f"{','.join([a.replace('_', ' ') for a in self.tags])}, -animated",
             "page" : self.page + 1,
             "key" : self.ctx.bot.derpibooru_api
         }
@@ -198,7 +198,7 @@ class E621(Booru):
         super().__init__(*args, **kwargs)
         self.url = "https://e621.net/post/index.json"
         self.queryStrings = {
-            "tags" : " ".join(self.tags)
+            "tags" : f"{' '.join(self.tags)} -animated"
         }
         self.headers = {'User-Agent': self.ctx.bot.user_agent}
         self.response = requests.get(self.url, params = self.queryStrings, headers = self.headers)

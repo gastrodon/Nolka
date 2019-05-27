@@ -107,13 +107,13 @@ class Paginated:
                 raise error
 
     async def close(self):
-        self.backgroud_task.cancel()
         try:
             await self.message.clear_reactions()
         except discord.errors.NotFound:
             pass
         if self.on_close:
             await self.on_close()
+        self.backgroud_task.cancel()
 
     async def update_react_map(self, react_map):
         if react_map == self.react_map:
