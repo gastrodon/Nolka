@@ -1,5 +1,5 @@
 import untangle, json, requests, os, discord
-from libs import Macro, Paginate
+from libs import Macro, Paginate, Tools
 
 class Booru:
     """
@@ -203,6 +203,10 @@ class E621(Booru):
         self.headers = {'User-Agent': self.ctx.bot.user_agent}
         self.response = requests.get(self.url, params = self.queryStrings, headers = self.headers)
         self.parsed = json.loads(self.response.text)
+
+        if not len(self.parsed):
+            raise Tools.BooruNoPosts
+
         self.total = len(self.parsed)
         self.page_count = None
 

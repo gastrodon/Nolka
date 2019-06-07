@@ -1,66 +1,113 @@
-from discord.ext import commands
 import os, json
+from discord.ext import commands
 
 class CachedBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.path = f"{os.path.dirname(os.path.realpath(__file__))}/__cache"
-        self.config = kwargs["config"]
-        self.token = self.config["token"]
-        self.gelbooru_api = self.config["gelbooruAPI"]
-        self.gelbooru_id = self.config["gelbooruID"]
-        self.derpibooru_api = self.config["derpibooruAPI"]
-        self.user_agent = self.config["e621Agent"]
-        # a list of ongoing tasks
-        self.ongoing = []
+        self.cache = DiscordCache(self, "__cache")
+
+        _config = kwargs["config"]
+        self.token = _config["token"]
+        self.gelbooru_api = _config["gelbooruAPI"]
+        self.gelbooru_id = _config["gelbooruID"]
+        self.derpibooru_api = _config["derpibooruAPI"]
+        self.user_agent = _config["e621Agent"]
+        self.__log_id = _config["log"]
 
     async def async_init(self):
-        await self.read_cache()
-        self.log = self.get_channel(self.config["log"][1])
-
-    async def new_cache(self):
-        buffer = {}
-        for guild in self.guilds:
-            buffer[guild.id] = {}
-        return buffer
-
-    async def read_cache(self):
-        if not os.path.isdir(self.path):
-            os.mkdir(self.path)
-        try:
-            self.cache = json.load(open(f"{self.path}/cache.json", "r"))
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            self.cache = await self.new_cache()
-            await self.update_cache()
-
-    async def update_cache(self):
-        with open(f"{self.path}/cache.json", "w") as stream:
-            json.dump(self.cache, stream)
+        self.log = self.get_channel(self.__log_id)
 
     async def add_self_roles(self, ctx, *roles):
-        roles = [x.id for x in roles]
-        self.cache[str(ctx.guild.id)]["self_roles"] = list(dict.fromkeys([*roles, *self.cache[str(ctx.guild.id)]["self_roles"]]))
-        await self.update_cache()
+        await self.cache.add_self_roles(ctx, roles)
 
-    async def remove_self_roles(self, ctx, *roles):
-        roles = [x.id for x in roles]
-        self.cache[str(ctx.guild.id)]["self_roles"] = [role for role in self.cache[str(ctx.guild.id)]["self_roles"] if role not in roles]
-        await self.update_cache()
-
-    async def new_guild_cache(self, ctx):
-        self.cache[str(ctx.guild.id)] = {}
-        await self.update_cache()
+    async def remove_self_roles(self, ctx,  *roles):
+        await self.cache.remove_self_roles(ctx, roles)
 
     async def set_prefix(self, ctx, *prefixes):
-        self.cache[str(ctx.guild.id)]["prefix"] = prefixes
-        await self.update_cache()
+        await self.cache.set_prefix(ctx, prefixes)
 
     async def add_prefix(self, ctx, *prefixes):
-        current = await self.command_prefix(ctx.bot, ctx.message)
-        await self.set_prefix(ctx, *[*current, *prefixes])
-
+        await self.cache.add_prefix(ctx, prefixes)
 
     async def clear_prefix(self, ctx):
-        if self.cache[str(ctx.guild.id)].get("prefix"):
-            del self.cache[str(ctx.guild.id)]["prefix"]
-        await self.update_cache()
+        await self.cache.clear_prefix(ctx)
+
+class DiscordCache:
+    def __init__(self, client, relative_path):
+        self.path = f"{os.path.dirname(os.path.realpath(__file__))}/{relative_path}"
+        self.filename = "cache.json"
+        self.client = client
+
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+
+        try:
+            print(f"{self.path}/{self.filename}")
+            self.__cache = json.load(open(f"{self.path}/{self.filename}", "r"))
+
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            self.__cache = {}
+
+            with open(f"{self.path}/{self.filename}", "w") as stream:
+                json.dump(self.__cache, stream)
+
+    def __repr__(self):
+        return json.dumps(self.__cache)
+
+    async def write_cache(self):
+        with open(f"{self.path}/{self.filename}", "w") as stream:
+            json.dump(self.__cache, stream)
+
+    async def new_guild(self, ctx):
+        guild = str(ctx.guild.id)
+        self.__cache[guild] = {}
+        await self.write_cache()
+
+    async def add_self_roles(self, ctx, roles):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            await self.new_guild(ctx)
+
+        add = [role.id for role in roles]
+        existing = self.__cache[guild].get("self_roles", [])
+        print(add, existing)
+        self.__cache[guild]["self_roles"] = [*add, *existing]
+        await self.write_cache()
+
+    async def remove_self_roles(self, ctx, roles):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            await self.new_guild(ctx)
+
+        remove = [role.id for role in roles]
+        self.__cache[guild]["self_roles"] = [role for role in self.__cache[guild]["self_roles"] if role not in remove]
+        await self.write_cache()
+
+    async def set_prefix(self, ctx, prefixes):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            self.new_guild(self, ctx)
+
+        self.__cache[guild]["prefix"] = prefixes
+        await self.write_cache()
+
+    async def add_prefix(self, ctx, prefixes):
+        current = await self.client.command_prefix(ctx.bot, ctx.message)
+        await self.set_prefix(ctx, [*prefixes, *current])
+
+    async def clear_prefix(self, ctx):
+        await self.set_prefix(ctx, ["-"])
+
+    async def prefix(self, message):
+        guild = str(message.guild.id)
+
+        if guild not in self.__cache:
+            await self.new_guild(message)
+
+        return self.__cache[guild].get("prefix", ["-"])
+
+    def __getitem__(self, key):
+        return self.__cache[key]

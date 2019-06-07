@@ -21,7 +21,7 @@ with open(os.path.dirname(os.path.realpath(__file__)) + "/token.json") as stream
     config_file = json.load(stream)
 
 async def pre_fixer(bot, message):
-    return bot.cache[str(message.guild.id)].get("prefix", ["-"])
+    return await bot.cache.prefix(message)
 
 Nolka = botclass.CachedBot(
     description = "A bot named Nolka",
@@ -32,7 +32,6 @@ Nolka = botclass.CachedBot(
 Nolka.remove_command("help")
 
 for cog in Cogs.safe:
-    #TODO: Try with a traceback
     Nolka.load_extension(cog)
 
 @Nolka.event
@@ -42,7 +41,7 @@ async def on_ready():
     """
     await Nolka.async_init()
     await Nolka.change_presence(activity = discord.Game(
-        name = "on {} servers".format(len(Nolka.guilds)),
+        name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
     print(Nolka.cache)
 

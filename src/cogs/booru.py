@@ -75,7 +75,7 @@ class Booru(commands.Cog):
     async def e621(self, ctx, *args):
         """
         Search [e621](https://e621.net/) for images. Any request in a sfw channel will have `safe` appended.
-        -e621 [tags]
+        `-e621 [tags]`
         """
         loading_message = "Searching..."
 
@@ -92,7 +92,7 @@ class Booru(commands.Cog):
 
         try:
             response = BooruAPI.E621(ctx, message, tags = args)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, Tools.BooruNoPosts):
             return await message.edit(
                 embed = await Macro.send("No posts were found")
             )
