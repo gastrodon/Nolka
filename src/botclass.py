@@ -42,7 +42,6 @@ class DiscordCache:
             os.mkdir(self.path)
 
         try:
-            print(f"{self.path}/{self.filename}")
             self.__cache = json.load(open(f"{self.path}/{self.filename}", "r"))
 
         except (FileNotFoundError, json.decoder.JSONDecodeError):
@@ -71,7 +70,6 @@ class DiscordCache:
 
         add = [role.id for role in roles]
         existing = self.__cache[guild].get("self_roles", [])
-        print(add, existing)
         self.__cache[guild]["self_roles"] = [*add, *existing]
         await self.write_cache()
 
@@ -89,7 +87,7 @@ class DiscordCache:
         guild = str(ctx.guild.id)
 
         if guild not in self.__cache:
-            self.new_guild(self, ctx)
+            self.new_guild(ctx)
 
         self.__cache[guild]["prefix"] = prefixes
         await self.write_cache()
@@ -108,6 +106,31 @@ class DiscordCache:
             await self.new_guild(message)
 
         return self.__cache[guild].get("prefix", ["-"])
+
+    async def add_update_flag(self, ctx):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            self.new_guild(ctx)
+
+        self.__cache[guild]["flag"] = True
+        await self.write_cache()
+
+    async def remove_update_flag(self, ctx):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            return
+
+        self.__cache[guild]["flag"] = False
+
+    async def check_flag(self, ctx):
+        guild = str(ctx.guild.id)
+
+        if guild not in self.__cache:
+            return False
+
+        return self.__cache[guild]["flag"]
 
     def __getitem__(self, key):
         return self.__cache[key]
