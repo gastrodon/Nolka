@@ -6,6 +6,7 @@ DOCS : Coming soon
 """
 
 import discord, json, os, botclass
+from libs.Tools import Workers
 
 class Cogs:
     safe = [
@@ -43,6 +44,39 @@ async def on_ready():
     await Nolka.change_presence(activity = discord.Game(
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
-    print(Nolka.cache)
+
+@Nolka.event
+async def on_guild_join(guild):
+    """
+    Update the presence of Nolka and mute role scope when a guild is added
+    """
+    await Nolka.change_presence(activity = discord.Game(
+        name = "-help for {} guilds".format(len(Nolka.guilds)),
+    ))
+
+    Workers._update_mute_scope(guild)
+
+@Nolka.event
+async def on_guild_remove(guild):
+    """
+    Update the presence of Nolka when a guild is removed
+    """
+    await Nolka.change_presence(activity = discord.Game(
+        name = "-help for {} guilds".format(len(Nolka.guilds)),
+    ))
+
+@Nolka.event
+async def on_guild_channel_update(before, after):
+    """
+    Update mute role scope when a channel is modified
+    """
+    await Workers._update_mute_scope(after.guild)
+
+@Nolka.event
+async def on_guild_channel_create(channel):
+    """
+    Update mute role scope when a channel is created
+    """
+    await Workers._update_mute_scope(channel.guild)
 
 Nolka.run(Nolka.token)

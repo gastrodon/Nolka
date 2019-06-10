@@ -4,53 +4,8 @@ Server management for a bot named Nolka
 
 import discord, typing
 from libs import Macro, Tools
+from libs.Tools import Workers
 from discord.ext import commands
-from asyncio import sleep
-
-class Workers:
-    @staticmethod
-    async def _notify(ctx, user, mode, reason):
-        try:
-            if user.dm_channel is None:
-                await user.create_dm()
-            await user.dm_channel.send(
-                embed = await Macro.Embed.infraction(
-                    f"You have been {mode} from the server {ctx.guild}\nReason given: {reason}"
-                )
-            )
-            return
-        except discord.Forbidden:
-            return
-
-    @staticmethod
-    async def _mute_create(ctx):
-        await ctx.send(
-            embed = await Macro.send("Let me set up a `muted` role")
-        )
-        guild = ctx.guild
-        role = await guild.create_role(name = "muted")
-        for channel in guild.channels:
-            await channel.set_permissions(
-                role,
-                reason = f"Created a mute role",
-                send_messages = False,
-                add_reactions = False
-            )
-        role.edit(position = guild.me.top_role.position - 1)
-        return role
-
-    @staticmethod
-    async def mute_timer(ctx, user, duration):
-        role = discord.utils.find(lambda x : x.name == "muted", ctx.guild.roles) or await Workers._mute_create(ctx)
-        await user.add_roles(role)
-        await ctx.send(
-            embed = await Macro.send(f"Muted {user.name}")
-        )
-        await sleep(duration)
-        await user.remove_roles(role)
-        await ctx.send(
-            embed = await Macro.send(f"Unmuted {user.name}")
-        )
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -61,6 +16,13 @@ class Admin(commands.Cog):
             "m" : 60,
             "s" : 1,
         }
+
+    async def _role_take(self, ctx, members, roles):
+        if len(roles) is 0 or len(members) is 0:
+            raise commands.MissingRequiredArgument(discord.Role if len(roles) is 0 else discord.Member)
+
+        for member in members:
+            await member.remove_roles(*roles)
 
     @commands.group(pass_context = True, aliases = ["roles"])
     async def role(self, ctx):
@@ -79,7 +41,7 @@ class Admin(commands.Cog):
                 embed = await Macro.send("You have no special roles")
             )
 
-    @role.command(pass_context = True, name = "give", aliases = ["new", "create"])
+    @role.command(pass_context = True, name = "give", aliases = ["new", "create", "add"])
     @commands.has_permissions(manage_roles = True)
     async def role_give(self, ctx, *args : typing.Union[discord.Role, discord.Member, str]):
         """
@@ -118,12 +80,12 @@ class Admin(commands.Cog):
         """
         roles = list(filter(lambda x : isinstance(x, discord.Role), args))
         members = list(filter(lambda x : isinstance(x, discord.Member), args))
-        if len(roles) is 0 or len(members) is 0:
-            raise commands.MissingRequiredArgument(discord.Role if len(roles) is 0 else discord.Member)
-        for member in members:
-            await member.remove_roles(*roles)
+
+        self._role_take(ctx, members, roles)
+
         members = map(str, members)
         roles = map(str, roles)
+
         await ctx.channel.send(
             embed = await Macro.send(f"The users {', '.join(members)} no longer have the roles {', '.join(roles)}")
         )
@@ -172,21 +134,42 @@ class Admin(commands.Cog):
             embed = await Macro.Embed.infraction(f"goodbye, {user.name}")
         )
 
-    @commands.command(pass_context = True)
-    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration):
+    @commands.command(pass_context = True, name = "mute", aliases = ["gag"])
+    @commands.has_permissions(manage_roles = True)
+    async def tempmute(self, ctx, user: typing.Union[discord.Member], duration = None):
         """
         Mute a user for a set duration
-        `-tempmute <user> <number of d|h|m|s|> [reason]`
+        `-mute <user> [number of d|h|m|s]`
         """
-        try:
-            self.bot.loop.create_task(Workers.mute_timer(ctx, user, int(duration)))
-        except ValueError:
-            pass
-        try:
-            duration = int(duration[0:-1]) * self.time_factors[duration[-1]]
-            self.bot.loop.create_task(Workers.mute_timer(ctx, user, duration))
-        except:
-            raise commands.BadArgument
+        if duration:
+            if str(duration)[-1] in self.time_factors:
+                duration = int(duration[0:-1]) * self.time_factors[duration[-1]]
+            try:
+                duration = int(duration)
+            except (ValueError, TypeError):
+                raise commands.BadArgument
+
+        self.bot.loop.create_task(Workers.mute_timer(ctx, user, duration))
+
+    @commands.command(pass_context = True, name = "unmute")
+    @commands.has_permissions(manage_roles = True)
+    async def unmute(self, ctx, user: typing.Union[discord.Member]):
+        """
+        Unmute a user
+        `-unmute <user>`
+        """
+        role = discord.utils.get(ctx.guild.roles, name = "muted")
+
+        if not role:
+            return await ctx.send(
+                embed = await Macro.error("There's no command called `muted`, so nothing was changed")
+            )
+
+        await self._role_take(ctx, [user], [role])
+
+        await ctx.send(
+            embed = await Macro.send(f"{user.name} may speak")
+        )
 
 def setup(bot):
     bot.add_cog(Admin(bot))
