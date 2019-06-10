@@ -50,7 +50,7 @@ class Workers:
                 )
             )
             return
-        except discord.Forbidden:
+        except discord.errors.Forbidden:
             return
 
     @staticmethod
@@ -71,7 +71,7 @@ class Workers:
                     send_messages = False,
                     add_reactions = False
                 )
-            except discord.errors.NotFound:
+            except (discord.errors.NotFound, discord.errors.Forbidden):
                 pass
 
         await role.edit(position = guild.me.top_role.position - 1)
