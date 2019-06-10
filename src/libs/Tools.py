@@ -72,14 +72,12 @@ class Workers:
                         send_messages = False,
                         add_reactions = False
                     )
-                except discord.errors.NotFound
+                except discord.errors.NotFound:
                     pass
 
-            await role.edit(position = guild.me.top_role.position - 1)
-
-        except: discord.errors.Forbidden:
+        except discord.errors.Forbidden:
             role = None
-            
+
         return role
 
 
