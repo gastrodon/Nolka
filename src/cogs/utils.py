@@ -2,7 +2,7 @@ from libs import Macro, Paginate
 from discord import Permissions, Color
 from discord.ext import commands
 from discord.utils import oauth_url
-from libs.Tools import CustomPermissionError
+from libs.Tools import CustomPermissionError, Workers
 from random import randrange
 
 class Helper:
@@ -234,6 +234,26 @@ class Utils(commands.Cog):
 
         return await ctx.send(
             embed = await Macro.send("The guild prefix was reset")
+        )
+
+    @commands.command(pass_context = True, name = "update")
+    async def update_guild(self, ctx):
+        """
+        Update Nolka's affairs with this guild. Try this before reporting a broken command
+        `-update`
+        """
+        message = await ctx.send(
+            embed = await Macro.send("Updating...")
+        )
+
+        await message.edit(
+            embed = await Macro.send("Updating mute command scope...")
+        )
+
+        await Workers._update_mute_scope(ctx.guild)
+
+        await message.edit(
+            embed = await Macro.send("Done")
         )
 
 def setup(bot):
