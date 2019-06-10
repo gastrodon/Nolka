@@ -44,6 +44,7 @@ async def on_ready():
     await Nolka.change_presence(activity = discord.Game(
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
+    await Workers._update_mute_scope(guild)
 
 @Nolka.event
 async def on_guild_join(guild):
@@ -54,7 +55,7 @@ async def on_guild_join(guild):
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
 
-    Workers._update_mute_scope(guild)
+    await Workers._update_mute_scope(guild)
 
 @Nolka.event
 async def on_guild_remove(guild):
