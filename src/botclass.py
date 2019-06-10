@@ -87,7 +87,7 @@ class DiscordCache:
         guild = str(ctx.guild.id)
 
         if guild not in self.__cache:
-            self.new_guild(ctx)
+            self.new_guild(gctx)
 
         self.__cache[guild]["prefix"] = prefixes
         await self.write_cache()
