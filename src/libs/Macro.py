@@ -32,6 +32,15 @@ class Embed:
         return await cls.message(description, color = discord.Color(0xff72bb))
 
     @classmethod
+    async def debug(cls, description, **kwargs):
+        """
+        Macro for sending debug messages to my _special guild_
+
+        description: string - message text
+        """
+        return await cls.message(description, color = discord.Color(0x3dff81))
+
+    @classmethod
     async def infraction(cls, description, **kwargs):
         """
         Macro for infraction messages
@@ -87,3 +96,4 @@ error = Embed.error
 image = Embed.image
 report = Embed.report
 infraction = Embed.infraction
+debug = Embed.debug

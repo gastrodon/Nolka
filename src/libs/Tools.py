@@ -54,7 +54,12 @@ class Workers:
             return
 
     @staticmethod
-    async def _get_mutable_role(guild):
+    async def _get_mutable_role(ctx):
+        guild = ctx.guild
+        if await ctx.bot.flag_check(guild):
+            await ctx.bot.flag_clear(guild)
+            await ctx.bot.send_debug("cleared flag and updated scope for guild {guild.name}")
+            return await Workers._update_mute_scope(guild)
         existing = discord.utils.get(guild.roles, name = "muted")
         return existing if existing else await Workers._update_mute_scope(guild)
 
@@ -79,7 +84,7 @@ class Workers:
 
     @staticmethod
     async def mute_timer(ctx, user, duration):
-        role = await Workers._get_mutable_role(ctx.guild)
+        role = await Workers._get_mutable_role(ctx)
         await user.add_roles(role)
         await ctx.send(
             embed = await Macro.send(f"Muted {user.name}")

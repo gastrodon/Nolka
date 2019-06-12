@@ -44,18 +44,18 @@ async def on_ready():
     await Nolka.change_presence(activity = discord.Game(
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
-    await Workers._update_mute_scope(guild)
+
 
 @Nolka.event
 async def on_guild_join(guild):
     """
-    Update the presence of Nolka and mute role scope when a guild is added
+    Set a flag to update the presence of Nolka and mute role scope when a guild is added
     """
     await Nolka.change_presence(activity = discord.Game(
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
 
-    await Workers._update_mute_scope(guild)
+    await Nolka.flag_set(guild)
 
 @Nolka.event
 async def on_guild_remove(guild):
@@ -69,15 +69,15 @@ async def on_guild_remove(guild):
 @Nolka.event
 async def on_guild_channel_update(before, after):
     """
-    Update mute role scope when a channel is modified
+    Set the flag to update mute role scope when a channel is modified
     """
-    await Workers._update_mute_scope(after.guild)
+    await Nolka.flag_set(after.guild)
 
 @Nolka.event
 async def on_guild_channel_create(channel):
     """
-    Update mute role scope when a channel is created
+    Set the flag to update mute role scope when a channel is created
     """
-    await Workers._update_mute_scope(channel.guild)
+    await Nolka.flag_set(after.guild)
 
 Nolka.run(Nolka.token)

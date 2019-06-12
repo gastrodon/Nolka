@@ -1,5 +1,7 @@
 import os, json
+from libs import Macro
 from discord.ext import commands
+from datetime import datetime
 
 class CachedBot(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -16,6 +18,8 @@ class CachedBot(commands.Bot):
 
     async def async_init(self):
         self.log = self.get_channel(self.__log_id)
+        for guild in self.guilds:
+            await self.flag_set(guild)
 
     async def add_self_roles(self, ctx, *roles):
         await self.cache.add_self_roles(ctx, roles)
@@ -31,6 +35,21 @@ class CachedBot(commands.Bot):
 
     async def clear_prefix(self, ctx):
         await self.cache.clear_prefix(ctx)
+
+    async def flag_set(self, guild):
+        return await self.cache.flag_set(guild)
+
+    async def flag_clear(self, guild):
+        return await self.cache.flag_clear(guild)
+
+    async def flag_check(self, guild):
+        return await self.cache.flag_clear(guild)
+
+    async def send_debug(self, message):
+        await self.log.send(
+            embed = Macro.debug(f"debug on {datetime.now()}\n\n{message}")
+        )
+
 
 class DiscordCache:
     def __init__(self, client, relative_path):
@@ -57,16 +76,15 @@ class DiscordCache:
         with open(f"{self.path}/{self.filename}", "w") as stream:
             json.dump(self.__cache, stream)
 
-    async def new_guild(self, ctx):
-        guild = str(ctx.guild.id)
-        self.__cache[guild] = {}
+    async def new_guild(self, guild_id):
+        self.__cache[guild_id] = {}
         await self.write_cache()
 
     async def add_self_roles(self, ctx, roles):
         guild = str(ctx.guild.id)
 
         if guild not in self.__cache:
-            await self.new_guild(ctx)
+            await self.new_guild(guild)
 
         add = [role.id for role in roles]
         existing = self.__cache[guild].get("self_roles", [])
@@ -77,7 +95,7 @@ class DiscordCache:
         guild = str(ctx.guild.id)
 
         if guild not in self.__cache:
-            await self.new_guild(ctx)
+            await self.new_guild(guild)
 
         remove = [role.id for role in roles]
         self.__cache[guild]["self_roles"] = [role for role in self.__cache[guild]["self_roles"] if role not in remove]
@@ -87,7 +105,7 @@ class DiscordCache:
         guild = str(ctx.guild.id)
 
         if guild not in self.__cache:
-            self.new_guild(gctx)
+            self.new_guild(guild)
 
         self.__cache[guild]["prefix"] = prefixes
         await self.write_cache()
@@ -103,9 +121,35 @@ class DiscordCache:
         guild = str(message.guild.id)
 
         if guild not in self.__cache:
-            await self.new_guild(message)
+            await self.new_guild(guild)
 
         return self.__cache[guild].get("prefix", ["-"])
+
+    async def flag_set(self, guild):
+        guild = str(guild.id)
+
+        if guild not in self.__cache:
+            await self.new_guild(guild)
+
+        self.__cache[guild]["flag"] = True
+        await self.write_cache()
+
+    async def flag_clear(self, guild):
+        guild = str(guild.id)
+
+        if guild not in self.__cache:
+            await self.new_guild(guild)
+
+        self.__cache[guild]["flag"] = False
+        await self.write_cache()
+
+    async def flag_check(self, guild):
+        guild = str(guild.id)
+
+        if guild not in self.__cache:
+            return False
+
+        return self.__cache[guild],get("flag", False)
 
     def __getitem__(self, key):
         return self.__cache[key]

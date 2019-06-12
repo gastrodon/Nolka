@@ -235,6 +235,10 @@ class Utils(commands.Cog):
         return await ctx.send(
             embed = await Macro.send("The guild prefix was reset")
         )
+    ###
+    @commands.command(pass_context = True)
+    async def test(self, ctx, *, message):
+        await ctx.bot.send_debug(message)
 
 def setup(bot):
     bot.add_cog(Utils(bot))
