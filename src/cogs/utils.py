@@ -2,7 +2,7 @@ from libs import Macro, Paginate
 from discord import Permissions, Color
 from discord.ext import commands
 from discord.utils import oauth_url
-from libs.Tools import CustomPermissionError
+from libs.Tools import CustomPermissionError, Workers
 from random import randrange
 
 class Helper:
@@ -235,10 +235,6 @@ class Utils(commands.Cog):
         return await ctx.send(
             embed = await Macro.send("The guild prefix was reset")
         )
-    ###
-    @commands.command(pass_context = True)
-    async def test(self, ctx, *, message):
-        await ctx.bot.send_debug(message)
 
 def setup(bot):
     bot.add_cog(Utils(bot))

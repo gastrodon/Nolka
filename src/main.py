@@ -45,7 +45,6 @@ async def on_ready():
         name = "-help for {} guilds".format(len(Nolka.guilds)),
     ))
 
-
 @Nolka.event
 async def on_guild_join(guild):
     """

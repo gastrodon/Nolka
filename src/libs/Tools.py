@@ -50,7 +50,7 @@ class Workers:
                 )
             )
             return
-        except discord.Forbidden:
+        except discord.errors.Forbidden:
             return
 
     @staticmethod
@@ -65,22 +65,26 @@ class Workers:
 
     @staticmethod
     async def _update_mute_scope(guild):
-        existing = discord.utils.get(guild.roles, name = "muted")
-        role = existing if existing else await guild.create_role(name = "muted")
+        try:
+            existing = discord.utils.get(guild.roles, name = "muted")
+            role = existing if existing else await guild.create_role(name = "muted")
 
-        for channel in guild.channels:
-            try:
-                await channel.set_permissions(
-                    role,
-                    reason = f"Updating the mutable role",
-                    send_messages = False,
-                    add_reactions = False
-                )
-            except discord.errors.NotFound:
-                pass
+            for channel in guild.channels:
+                try:
+                    await channel.set_permissions(
+                        role,
+                        reason = f"Updating the mutable role",
+                        send_messages = False,
+                        add_reactions = False
+                    )
+                except discord.errors.NotFound:
+                    pass
 
-        await role.edit(position = guild.me.top_role.position - 1)
+        except discord.errors.Forbidden:
+            role = None
+
         return role
+
 
     @staticmethod
     async def mute_timer(ctx, user, duration):
