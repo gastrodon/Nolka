@@ -56,24 +56,31 @@ class Workers:
     @staticmethod
     async def _get_mutable_role(ctx):
         guild = ctx.guild
+
         if await ctx.bot.flag_check(guild):
             await ctx.bot.flag_clear(guild)
             await ctx.bot.send_debug("cleared flag and updated scope for guild {guild.name}")
             return await Workers._update_mute_scope(guild)
+
         existing = discord.utils.get(guild.roles, name = "muted")
         return existing if existing else await Workers._update_mute_scope(guild)
 
     @staticmethod
     async def _update_mute_scope(guild):
         try:
+            position = guild.me.top_role.position - 1
             existing = discord.utils.get(guild.roles, name = "muted")
             role = existing if existing else await guild.create_role(name = "muted")
+            await role.edit(
+                position = position,
+                reason = "Updating the mutable role"
+            )
 
             for channel in guild.channels:
                 try:
                     await channel.set_permissions(
                         role,
-                        reason = f"Updating the mutable role",
+                        reason = "Updating the mutable role",
                         send_messages = False,
                         add_reactions = False
                     )

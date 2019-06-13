@@ -47,7 +47,7 @@ class CachedBot(commands.Bot):
 
     async def send_debug(self, message):
         await self.log.send(
-            embed = Macro.debug(f"debug on {datetime.now()}\n\n{message}")
+            embed = await Macro.debug(f"debug on {datetime.now()}\n\n{message}")
         )
 
 

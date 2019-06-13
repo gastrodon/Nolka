@@ -228,7 +228,7 @@ class Utils(commands.Cog):
     async def prefix_reset(self, ctx):
         """
         Reset the prefix that Nolka uses on this guild
-        `-prefux reset`
+        `-prefix reset`
         """
         await ctx.bot.clear_prefix(ctx)
 
