@@ -1,22 +1,25 @@
-
 import typing, types, discord
 
 from libs.Tools import NoReactMethod
+from asyncio import CancelledError
+
 
 class NoReactMethod(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
 class Paginated:
-    def __init__(
-        self, bot, message,
-        member, react_map,
-        timeout   = 60,
-        on_start  = None,
-        on_close  = None,
-        on_error  = None,
-        on_update = None
-    ):
+    def __init__(self,
+                 bot,
+                 message,
+                 member,
+                 react_map,
+                 timeout = 60,
+                 on_start = None,
+                 on_close = None,
+                 on_error = None,
+                 on_update = None):
         """
         Pagination class
 
@@ -50,14 +53,17 @@ class Paginated:
         if isinstance(message, discord.Message):
             self.message = message
         else:
-            raise TypeError(f"message must be a discord.Message, not a {type(message)}")
+            raise TypeError(
+                f"message must be a discord.Message, not a {type(message)}")
 
         if isinstance(member, (list, tuple, set)):
             self.member_ids = [m.id for m in members]
         if isinstance(member, (discord.User, discord.Member)):
             self.member_ids = {member.id}
         else:
-            raise TypeError(f"member must be discord.User or list[discord.User], not {type(member)}")
+            raise TypeError(
+                f"member must be discord.User or list[discord.User], not {type(member)}"
+            )
 
         self.timeout = int(timeout)
         self.on_start = on_start
@@ -73,18 +79,18 @@ class Paginated:
 
     async def watcher(self):
         try:
-            reaction, user = await self.bot.wait_for(
-                "reaction_add",
-                check = self.check,
-                timeout = self.timeout
-            )
+            reaction, user = await self.bot.wait_for("reaction_add",
+                                                     check = self.check,
+                                                     timeout = self.timeout)
         except:
             await self.close()
         else:
             try:
                 await self.message.remove_reaction(reaction, user)
                 await self.react_map[reaction.emoji]()
+
                 self.backgroud_task = self.bot.loop.create_task(self.watcher())
+
             except IndexError:
                 if self.on_error:
                     await self.on_error(NoReactMethod)
@@ -98,7 +104,9 @@ class Paginated:
                 await self.on_start()
             for reaction in self.react_map.keys():
                 await self.message.add_reaction(reaction)
+
             self.backgroud_task = self.bot.loop.create_task(self.watcher())
+
         except Exception as error:
             if self.on_error:
                 await self.on_error(error)

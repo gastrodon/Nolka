@@ -3,6 +3,7 @@ from libs import Macro
 from discord.ext import commands
 from datetime import datetime
 
+
 class CachedBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,7 +25,7 @@ class CachedBot(commands.Bot):
     async def add_self_roles(self, ctx, *roles):
         await self.cache.add_self_roles(ctx, roles)
 
-    async def remove_self_roles(self, ctx,  *roles):
+    async def remove_self_roles(self, ctx, *roles):
         await self.cache.remove_self_roles(ctx, roles)
 
     async def set_prefix(self, ctx, *prefixes):
@@ -46,9 +47,8 @@ class CachedBot(commands.Bot):
         return await self.cache.flag_clear(guild)
 
     async def send_debug(self, message):
-        await self.log.send(
-            embed = await Macro.debug(f"debug on {datetime.now()}\n\n{message}")
-        )
+        await self.log.send(embed = await Macro.debug(
+            f"debug on {datetime.now()}\n\n{message}"))
 
 
 class DiscordCache:
@@ -98,7 +98,10 @@ class DiscordCache:
             await self.new_guild(guild)
 
         remove = [role.id for role in roles]
-        self.__cache[guild]["self_roles"] = [role for role in self.__cache[guild]["self_roles"] if role not in remove]
+        self.__cache[guild]["self_roles"] = [
+            role for role in self.__cache[guild]["self_roles"]
+            if role not in remove
+        ]
         await self.write_cache()
 
     async def set_prefix(self, ctx, prefixes):
@@ -149,7 +152,7 @@ class DiscordCache:
         if guild not in self.__cache:
             return False
 
-        return self.__cache[guild],get("flag", False)
+        return self.__cache[guild], get("flag", False)
 
     def __getitem__(self, key):
         return self.__cache[key]

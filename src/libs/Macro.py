@@ -2,25 +2,28 @@ import discord
 from enum import Enum
 from discord.ext import commands
 
+
 def admin(ctx):
     """
     Return bool representing a context owner having admin rights on a server.
     """
     return ctx.message.author.permissions_in(ctx.channel).administrator
 
+
 class Embed:
     @staticmethod
-    async def message(description, **kwargs):
+    async def message(description = None, **kwargs):
         """
         Macro for normal messages
 
         description: string - message text
         """
-        return discord.Embed(
-            type = "rich",
-            description = description,
-            color = kwargs.get("color", discord.Color(0x82b1ff)),
-        )
+        if not kwargs.get("color"):
+            kwargs["color"] = discord.Color(0x82b1ff)
+
+        return discord.Embed(type = "rich",
+                             description = description,
+                             **kwargs)
 
     @classmethod
     async def error(cls, description, **kwargs):
@@ -78,18 +81,14 @@ class Embed:
         title: string - title of the message
         helpitems: tuple - command-docstring pairs
         """
-        message = discord.Embed(
-            type = "rich",
-            title = title,
-            color = kwargs.get("color", discord.Color(0x82b1ff))
-        )
+        message = discord.Embed(type = "rich",
+                                title = title,
+                                color = kwargs.get("color",
+                                                   discord.Color(0x82b1ff)))
         for item in helpitems:
-            message.add_field(
-                name = item[0],
-                value = item[1],
-                inline = False
-            )
+            message.add_field(name = item[0], value = item[1], inline = False)
         return message
+
 
 send = Embed.message
 error = Embed.error

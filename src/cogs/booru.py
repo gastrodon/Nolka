@@ -5,14 +5,15 @@ Booru query for a bot named Nolka
 from libs import Macro, BooruAPI, Tools
 from discord.ext import commands
 
+
 class Booru(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     async def booru_no_perms(self, message):
-        return await message.edit(
-            embed = await Macro.Embed.error("I can't start pagination without the `manage_messages` permission")
-        )
+        return await message.edit(embed = await Macro.Embed.error(
+            "I can't start pagination without the `manage_messages` permission"
+        ))
 
     @commands.command(pass_context = True)
     async def gel(self, ctx, *args):
@@ -26,9 +27,7 @@ class Booru(commands.Cog):
 
         loading_message = "Searching..."
 
-        message = await ctx.send(
-            embed = await Macro.send(loading_message)
-        )
+        message = await ctx.send(embed = await Macro.send(loading_message))
 
         if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
             return await self.booru_no_perms(message)
@@ -37,8 +36,7 @@ class Booru(commands.Cog):
             response = BooruAPI.Gel(ctx, message, tags = args)
         except ZeroDivisionError:
             return await message.edit(
-                embed = await Macro.send("No posts were found")
-            )
+                embed = await Macro.send("No posts were found"))
         await response.start_pagination()
 
     @commands.command(pass_context = True)
@@ -49,16 +47,14 @@ class Booru(commands.Cog):
         """
         loading_message = "Searching..."
 
-        if not(len(args)):
-            args = ("pony",)
+        if not (len(args)):
+            args = ("pony", )
 
         if not ctx.channel.is_nsfw():
             args = (*args, "safe")
             loading_message = "searching sfw..."
 
-        message = await ctx.send(
-            embed = await Macro.send(loading_message)
-        )
+        message = await ctx.send(embed = await Macro.send(loading_message))
 
         if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
             return await self.booru_no_perms(message)
@@ -67,8 +63,7 @@ class Booru(commands.Cog):
             response = BooruAPI.Derpi(ctx, message, tags = args)
         except ZeroDivisionError:
             return await message.edit(
-                embed = await Macro.send("No posts were found")
-            )
+                embed = await Macro.send("No posts were found"))
         await response.start_pagination()
 
     @commands.command(pass_context = True, aliases = ["e6"])
@@ -83,9 +78,7 @@ class Booru(commands.Cog):
             args = (*args, "rating:safe")
             loading_message = "searching sfw..."
 
-        message = await ctx.send(
-            embed = await Macro.send(loading_message)
-        )
+        message = await ctx.send(embed = await Macro.send(loading_message))
 
         if not ctx.guild.me.permissions_in(ctx.channel).manage_messages:
             return await self.booru_no_perms(message)
@@ -94,8 +87,7 @@ class Booru(commands.Cog):
             response = BooruAPI.E621(ctx, message, tags = args)
         except (ZeroDivisionError, Tools.BooruNoPosts):
             return await message.edit(
-                embed = await Macro.send("No posts were found")
-            )
+                embed = await Macro.send("No posts were found"))
         await response.start_pagination()
 
 
