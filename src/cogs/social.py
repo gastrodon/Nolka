@@ -72,12 +72,16 @@ class Social(commands.Cog):
 
     @ifunny.command(pass_context = True, name = "user")
     async def ifunny_user(self, ctx, nick, *_):
+        """
+        Return info about an ifunny user
+        `-ifunny user <username>`
+        """
         message = await ctx.send(embed = await Macro.send(f"Finding {nick}"))
         user = User.by_nick(nick)
 
         if not user:
             return await message.edit(
-                emebd = await Macro.send(f"No such user {nick} on iFunny"))
+                embed = await Macro.send(f"No such user {nick} on iFunny"))
 
         card = await self.user_card(user)
 
@@ -87,6 +91,10 @@ class Social(commands.Cog):
                     name = "features",
                     alias = ["featured"])
     async def ifunny_features(self, ctx):
+        """
+        Paginate through iFunny features
+        `-ifunny features`
+        """
         message = await ctx.send(embed = await Macro.send(f"Getting features"))
 
         feed = Client().featured
@@ -98,6 +106,10 @@ class Social(commands.Cog):
 
     @ifunny.command(pass_context = True, name = "timeline")
     async def ifunny_user_timeline(self, ctx, nick, *_):
+        """
+        Paginate through the timeline of a user
+        `-ifunny timeline <username>`
+        """
         message = await ctx.send(embed = await Macro.send(f"Finding {nick}"))
 
         user = User.by_nick(nick)
